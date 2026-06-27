@@ -3,17 +3,17 @@ url: https://hypnor.circadia-lab.uk
 template:
   bootstrap: 5
   bslib:
-    # ── Colours ───────────────────────────────────────────────────────────────
-    # midnight navy #0D1B2A | sky blue #4A9BBF | teal ice #9BDFE2
-    # coral wake  #FC544A   | deep ocean #014370 | off-white #F0F6FB
-    bg:              "#F0F6FB"          # cool off-white
-    fg:              "#0D1B2A"          # midnight navy
-    primary:         "#4A9BBF"          # sky blue
-    secondary:       "#014370"          # deep ocean
-    success:         "#9BDFE2"          # teal ice
-    info:            "#D6EEF5"          # pale sky
-    warning:         "#FFA75D"          # amber
-    danger:          "#FC544A"          # coral wake
+    # ── Colours (hex sticker palette) ────────────────────────────────────────
+    # cream #FFF7C5 | amber #F4AE52 | maroon #4F252E
+    # teal  #C1EBE9 | navy  #1B3A5C
+    bg:              "#FFF7C5"          # cream
+    fg:              "#4F252E"          # maroon
+    primary:         "#F4AE52"          # amber
+    secondary:       "#1B3A5C"          # navy
+    success:         "#C1EBE9"          # teal
+    info:            "#C1EBE9"          # teal
+    warning:         "#F4AE52"          # amber
+    danger:          "#4F252E"          # maroon
 
     # ── Fonts ─────────────────────────────────────────────────────────────────
     base_font:       {google: "DM Sans"}
@@ -25,13 +25,13 @@ template:
     headings-font-weight: 700
 
     # ── Cards / surfaces ──────────────────────────────────────────────────────
-    card-bg:         "#FFFFFF"
-    card-border-color: "#D6EEF5"
+    card-bg:         "#FFFEF0"          # warm white
+    card-border-color: "#F4AE52"        # amber
     card-border-radius: "0.75rem"
 
     # ── Code blocks ───────────────────────────────────────────────────────────
-    pre-bg:          "#0D1B2A"          # midnight navy
-    pre-color:       "#9BDFE2"          # teal ice
+    pre-bg:          "#4F252E"          # maroon
+    pre-color:       "#FFF7C5"          # cream
 
   includes:
     in_header: |
@@ -42,28 +42,28 @@ template:
       <meta name="twitter:card" content="summary">
       <meta name="twitter:image" content="https://hypnor.circadia-lab.uk/logo.png">
       <script src="https://cdn.usefathom.com/script.js" data-site="CKGXUGRT" defer></script>
-      <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#4A9BBF">
-      <meta name="msapplication-TileColor" content="#0D1B2A">
-      <meta name="theme-color" content="#0D1B2A">
+      <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#F4AE52">
+      <meta name="msapplication-TileColor" content="#4F252E">
+      <meta name="theme-color" content="#4F252E">
       <style>
         /* ── Navbar ── */
         .navbar {
-          background-color: #0D1B2A !important;
-          border-bottom: 2px solid #4A9BBF;
+          background-color: #4F252E !important;
+          border-bottom: 2px solid #F4AE52;
         }
         .navbar .navbar-brand,
         .navbar-nav .nav-link,
         .navbar-nav .nav-link:hover,
         .navbar .navbar-toggler-icon,
         .navbar form .btn {
-          color: #D6EEF5 !important;
+          color: #FFF7C5 !important;
         }
         .navbar-nav .nav-link:hover { opacity: 0.8; }
         .navbar-nav .nav-link.active {
-          color: #D6EEF5 !important;
-          border-bottom: 2px solid #9BDFE2;
+          color: #FFF7C5 !important;
+          border-bottom: 2px solid #F4AE52;
         }
-        .navbar small.nav-text { color: #9BDFE2 !important; }
+        .navbar small.nav-text { color: #F4AE52 !important; }
 
         /* ── Navbar logo size ── */
         .navbar-brand img { height: 40px; width: auto; }
@@ -76,59 +76,59 @@ template:
         .sidebar a,
         #toc a,
         #toc .nav-link {
-          color: #0D1B2A !important;
+          color: #4F252E !important;
         }
         .sidebar .nav-link:hover,
         .sidebar a:hover,
         #toc a:hover {
-          color: #014370 !important;
+          color: #1B3A5C !important;
         }
         .sidebar .nav-link.active,
         #toc .nav-link.active {
-          color: #014370 !important;
-          border-left: 2px solid #4A9BBF;
+          color: #1B3A5C !important;
+          border-left: 2px solid #F4AE52;
           font-weight: 600;
         }
 
         /* ── text-muted ── */
-        .text-muted { color: #1B6799 !important; }
+        .text-muted { color: #1B3A5C !important; }
 
         /* ── Sidebar border ── */
-        .sidebar { border-left: 3px solid #4A9BBF; padding-left: 1rem; }
+        .sidebar { border-left: 3px solid #F4AE52; padding-left: 1rem; }
 
         /* ── Reference index section headers ── */
         .reference-index h2 {
-          color: #014370;
+          color: #1B3A5C;
           font-size: 0.8rem;
           text-transform: uppercase;
           letter-spacing: 0.08em;
         }
 
         /* ── Inline code ── */
-        code { color: #014370; background: #D6EEF5;
+        code { color: #4F252E; background: #C1EBE9;
           border-radius: 4px; padding: 0.1em 0.35em; }
 
         /* ── Links ── */
-        a { color: #1B6799; }
-        a:hover { color: #4A9BBF; }
+        a { color: #4F252E; }
+        a:hover { color: #F4AE52; }
 
         /* ── Footer ── */
-        .footer { background: #0D1B2A; color: #D6EEF5; padding: 1.5rem 0; }
-        .footer a { color: #9BDFE2; }
+        .footer { background: #4F252E; color: #FFF7C5; padding: 1.5rem 0; }
+        .footer a { color: #F4AE52; }
 
         /* ── Search ── */
-        #search-input { border-color: #4A9BBF; }
+        #search-input { border-color: #F4AE52; }
 
         /* ── Buttons ── */
         .btn-primary {
-          background-color: #4A9BBF !important;
-          border-color: #4A9BBF !important;
-          color: #0D1B2A !important;
+          background-color: #F4AE52 !important;
+          border-color: #F4AE52 !important;
+          color: #4F252E !important;
         }
         .btn-primary:hover {
-          background-color: #014370 !important;
-          border-color: #014370 !important;
-          color: #D6EEF5 !important;
+          background-color: #4F252E !important;
+          border-color: #4F252E !important;
+          color: #FFF7C5 !important;
         }
       </style>
 

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="649" viewBox="0 0 680 740" role="img">
+  <title>hypnoR</title>
+  <desc>Hex sticker for the hypnoR R package: cream background with a maroon hypnogram trace, amber border, and hypnoR title.</desc>
+
+  <defs>
+    <clipPath id="hexclip">
+      <polygon points="340,30 610,190 610,510 340,670 70,510 70,190"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <polygon points="340,30 610,190 610,510 340,670 70,510 70,190"
+           fill="#FFF7C5" clip-path="url(#hexclip)"/>
+
+  <!-- Stage bands -->
+  <rect x="70" y="190" width="540" height="52" fill="#F4AE52" opacity="0.15" clip-path="url(#hexclip)"/>
+  <rect x="70" y="242" width="540" height="52" fill="#C1EBE9" opacity="0.25" clip-path="url(#hexclip)"/>
+  <rect x="70" y="294" width="540" height="52" fill="#C1EBE9" opacity="0.15" clip-path="url(#hexclip)"/>
+  <rect x="70" y="346" width="540" height="52" fill="#1B3A5C" opacity="0.12" clip-path="url(#hexclip)"/>
+  <rect x="70" y="398" width="540" height="52" fill="#1B3A5C" opacity="0.22" clip-path="url(#hexclip)"/>
+
+  <!-- Axis ticks -->
+  <line x1="126" y1="216" x2="138" y2="216" stroke="#4F252E" stroke-width="1" opacity="0.4"/>
+  <line x1="126" y1="268" x2="138" y2="268" stroke="#4F252E" stroke-width="1" opacity="0.4"/>
+  <line x1="126" y1="320" x2="138" y2="320" stroke="#4F252E" stroke-width="1" opacity="0.4"/>
+  <line x1="126" y1="372" x2="138" y2="372" stroke="#4F252E" stroke-width="1" opacity="0.4"/>
+  <line x1="126" y1="424" x2="138" y2="424" stroke="#4F252E" stroke-width="1" opacity="0.4"/>
+
+  <!-- Stage labels -->
+  <text x="122" y="220" text-anchor="end" font-family="monospace" font-size="11" fill="#F4AE52" opacity="0.9">W</text>
+  <text x="122" y="272" text-anchor="end" font-family="monospace" font-size="11" fill="#C1EBE9" opacity="0.9">R</text>
+  <text x="122" y="324" text-anchor="end" font-family="monospace" font-size="11" fill="#4F252E" opacity="0.6">N1</text>
+  <text x="122" y="376" text-anchor="end" font-family="monospace" font-size="11" fill="#1B3A5C" opacity="0.7">N2</text>
+  <text x="122" y="428" text-anchor="end" font-family="monospace" font-size="11" fill="#1B3A5C" opacity="0.7">N3</text>
+
+  <!-- Hypnogram trace -->
+  <polyline
+    points="
+      140,216 175,216
+      175,320 215,320
+      215,372 255,372
+      255,424 295,424
+      295,372 315,372
+      315,268 345,268
+      345,372 370,372
+      370,424 400,424
+      400,372 420,372
+      420,268 450,268
+      450,372 470,372
+      470,320 510,320
+      510,268 540,268
+      540,216 560,216
+    "
+    fill="none"
+    stroke="#4F252E"
+    stroke-width="2.4"
+    stroke-linejoin="miter"
+    clip-path="url(#hexclip)"
+    opacity="0.9"
+  />
+
+  <!-- Trailing dot -->
+  <circle cx="540" cy="216" r="4.5" fill="#F4AE52" opacity="0.95"/>
+
+  <!-- Hex border -->
+  <polygon points="340,30 610,190 610,510 340,670 70,510 70,190"
+           fill="none" stroke="#F4AE52" stroke-width="14"/>
+
+  <!-- Package name -->
+  <text x="340" y="572"
+        text-anchor="middle"
+        font-family="'DM Sans', 'Helvetica Neue', sans-serif"
+        font-size="62"
+        font-weight="700"
+        fill="#4F252E"
+        letter-spacing="-1">hypno<tspan fill="#F4AE52">R</tspan></text>
+</svg>
