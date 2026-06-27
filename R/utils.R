@@ -30,46 +30,44 @@
 
 # ── Circadia visual integration ───────────────────────────────────────────────
 
-# hypnoR uses circadia for colours and themes when it is installed, but runs
-# completely standalone without it.  Never list circadia in DESCRIPTION —
-# use .hypno_theme() and .hypno_stage_colours() everywhere instead of calling
-# circadia directly.
+# circadia is intentionally NOT listed in DESCRIPTION: it lives only on GitHub
+# and pak cannot resolve it during CI. Once circadia has a stable public
+# release, add it back under Suggests with Additional_repositories.
+#
+# Until then: .hypno_theme() and .hypno_stage_colours() provide self-contained
+# fallbacks drawn from the sticker palette. All plot functions must call these
+# helpers rather than circadia directly.
 
-#' Return theme_circadia() if circadia is installed, otherwise theme_minimal()
+#' ggplot2 theme for hypnoR plots
+#'
+#' Returns `ggplot2::theme_minimal()` with Circadia Lab defaults applied.
+#' When the circadia package is installed it will be upgraded to
+#' `circadia::theme_circadia()` in a future release.
+#'
 #' @noRd
-.hypno_theme <- function(...) {
-  if (requireNamespace("circadia", quietly = TRUE)) {
-    circadia::theme_circadia(...)
-  } else {
-    if (requireNamespace("ggplot2", quietly = TRUE)) {
-      ggplot2::theme_minimal(...)
-    }
-  }
+.hypno_theme <- function(base_size = 14, ...) {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) return(NULL)
+  ggplot2::theme_minimal(base_size = base_size, ...) +
+    ggplot2::theme(
+      panel.grid       = ggplot2::element_blank(),
+      axis.line.x      = ggplot2::element_line(),
+      axis.line.y      = ggplot2::element_line()
+    )
 }
 
-#' Built-in stage colour fallback (drawn from the Circadia main palette)
+#' Built-in stage colour palette (hex sticker palette)
 #'
 #' Returns a named character vector of hex colours for all known stage labels.
-#' When circadia is installed, its palette is used instead.
+#'
 #' @noRd
 .hypno_stage_colours <- function() {
-  fallback <- c(
-    # AASM stages
-    "W"           = "#FC544A",   # coral  — wake
-    "REM"         = "#FFA75D",   # amber  — REM
-    "N1"          = "#9BDFE2",   # teal   — light NREM
-    "N2"          = "#4A9BBF",   # sky    — NREM
-    "N3"          = "#014370",   # navy   — deep NREM
-    # Coarse stages
-    "Sleep"       = "#4A9BBF",
-    "Quiet sleep" = "#014370"
+  c(
+    "W"           = "#F4AE52",   # amber  — wake
+    "REM"         = "#C1EBE9",   # teal   — REM
+    "N1"          = "#FFF7C5",   # cream  — light NREM
+    "N2"          = "#1B3A5C",   # navy   — NREM
+    "N3"          = "#4F252E",   # maroon — deep NREM
+    "Sleep"       = "#1B3A5C",
+    "Quiet sleep" = "#4F252E"
   )
-  if (requireNamespace("circadia", quietly = TRUE)) {
-    # Allow circadia to override if it exports a stage colour map
-    if (existsMethod <- exists("stage_colours", where = asNamespace("circadia"),
-                               inherits = FALSE)) {
-      return(circadia::stage_colours())
-    }
-  }
-  fallback
 }
