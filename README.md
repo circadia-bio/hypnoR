@@ -1,4 +1,4 @@
-# 🌙 hypnoR
+# 😵‍💫 hypnoR
 
 **Hypnogram handling, plotting, and sleep architecture metrics for R — the staging-agnostic layer of the Circadia Lab ecosystem.**
 
