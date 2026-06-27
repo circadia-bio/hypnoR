@@ -27,3 +27,49 @@
 #' Convert epoch count to minutes
 #' @noRd
 .epochs_to_min <- function(n, epoch_sec) n * epoch_sec / 60
+
+# ── Circadia visual integration ───────────────────────────────────────────────
+
+# hypnoR uses circadia for colours and themes when it is installed, but runs
+# completely standalone without it.  Never list circadia in DESCRIPTION —
+# use .hypno_theme() and .hypno_stage_colours() everywhere instead of calling
+# circadia directly.
+
+#' Return theme_circadia() if circadia is installed, otherwise theme_minimal()
+#' @noRd
+.hypno_theme <- function(...) {
+  if (requireNamespace("circadia", quietly = TRUE)) {
+    circadia::theme_circadia(...)
+  } else {
+    if (requireNamespace("ggplot2", quietly = TRUE)) {
+      ggplot2::theme_minimal(...)
+    }
+  }
+}
+
+#' Built-in stage colour fallback (drawn from the Circadia main palette)
+#'
+#' Returns a named character vector of hex colours for all known stage labels.
+#' When circadia is installed, its palette is used instead.
+#' @noRd
+.hypno_stage_colours <- function() {
+  fallback <- c(
+    # AASM stages
+    "W"           = "#FC544A",   # coral  — wake
+    "REM"         = "#FFA75D",   # amber  — REM
+    "N1"          = "#9BDFE2",   # teal   — light NREM
+    "N2"          = "#4A9BBF",   # sky    — NREM
+    "N3"          = "#014370",   # navy   — deep NREM
+    # Coarse stages
+    "Sleep"       = "#4A9BBF",
+    "Quiet sleep" = "#014370"
+  )
+  if (requireNamespace("circadia", quietly = TRUE)) {
+    # Allow circadia to override if it exports a stage colour map
+    if (existsMethod <- exists("stage_colours", where = asNamespace("circadia"),
+                               inherits = FALSE)) {
+      return(circadia::stage_colours())
+    }
+  }
+  fallback
+}

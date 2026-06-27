@@ -9,8 +9,9 @@
 #' @param epoch_sec Epoch duration in seconds, used to construct the
 #'   time axis.  Default `30`.
 #' @param colours Named character vector mapping stage labels to hex colours.
-#'   Defaults to the Circadia Lab palette via `circadia::domain_colour_for()`,
-#'   if available, otherwise a built-in fallback.
+#'   Defaults to a built-in palette drawn from the Circadia Lab colours;
+#'   automatically upgraded to the full `circadia` palette if that package
+#'   is installed.  Pass your own named vector to override.
 #' @param show_cycles If `TRUE` and cycle information is available (a `cycle`
 #'   column is present in `hypnogram`), cycle boundaries are overlaid as
 #'   vertical dashed lines.  Default `FALSE`.
