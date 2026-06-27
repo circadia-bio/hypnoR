@@ -37,8 +37,8 @@ jobs:
 
       - name: Copy OG images to docs root
         run: |
-          cp man/figures/logo.png docs/logo.png
-          cp man/figures/card.png docs/card.png
+          [ -f man/figures/logo.png ] && cp man/figures/logo.png docs/logo.png || true
+          [ -f man/figures/card.png ] && cp man/figures/card.png docs/card.png || true
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
