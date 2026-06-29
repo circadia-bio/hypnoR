@@ -7,6 +7,10 @@
 
 ---
 
+> ⚠️ **hypnoR is in early development and has not been formally tested.** The API may change without notice, estimation results have not yet been validated against a reference implementation, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.
+
+---
+
 ## 📖 What is hypnoR?
 
 hypnoR is the hypnogram layer of the Circadia Lab R ecosystem. It sits
