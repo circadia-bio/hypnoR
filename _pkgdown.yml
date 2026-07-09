@@ -169,6 +169,11 @@ navbar:
       aria-label: GitHub
 
 reference:
+- title: "Constructors"
+  desc: "Build the hypnor_hypnogram object used by every other function."
+  contents:
+  - new_hypnogram
+
 - title: "Ingestion"
   desc: "Read hypnograms from common file formats."
   contents:

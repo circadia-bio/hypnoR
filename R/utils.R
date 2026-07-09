@@ -3,17 +3,40 @@
 
 # ── Staging resolution ────────────────────────────────────────────────────────
 
-#' Detect staging resolution from a hypnogram tibble
+#' Detect staging resolution from a character vector of stage labels
 #'
-#' Returns `"aasm"` if the stage factor contains any of N1 / N2 / N3 / REM,
-#' or `"coarse"` if only W / Sleep / Quiet sleep are present.
+#' Returns `"aasm"` if any of N1 / N2 / N3 / REM are present, or `"coarse"`
+#' if only W / Sleep / Quiet sleep are present.
+#'
+#' @param stages_chr Character vector of stage labels.
+#' @return `"aasm"` or `"coarse"`.
+#' @noRd
+.detect_resolution_chr <- function(stages_chr) {
+  if (any(stages_chr %in% c("N1", "N2", "N3", "REM"))) "aasm" else "coarse"
+}
+
+#' Detect staging resolution from a hypnogram tibble
 #'
 #' @param hypnogram A hypnogram tibble with a `stage` column.
 #' @return `"aasm"` or `"coarse"`.
 #' @noRd
 .detect_resolution <- function(hypnogram) {
-  stages <- unique(as.character(hypnogram$stage))
-  if (any(stages %in% c("N1", "N2", "N3", "REM"))) "aasm" else "coarse"
+  .detect_resolution_chr(as.character(hypnogram$stage))
+}
+
+#' Null-coalescing infix operator (internal, not exported)
+#'
+#' Package-local copy so hypnoR does not need to depend on rlang or a recent
+#' R version (base `%||%` is R >= 4.4 only) just for this.
+#'
+#' @noRd
+`%||%` <- function(x, y) if (is.null(x)) y else x
+
+#' First non-NA element of a vector, or `NA_character_`
+#' @noRd
+.first_non_na <- function(v) {
+  v <- v[!is.na(v)]
+  if (length(v) > 0L) as.character(v[[1L]]) else NA_character_
 }
 
 #' Standard AASM stage order (deepest sleep first, wake last)

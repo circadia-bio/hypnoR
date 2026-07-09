@@ -26,7 +26,8 @@ VignetteBuilder: knitr
 Depends:
     R (>= 4.1.0)
 Imports:
-    cli (>= 3.6.0)
+    cli (>= 3.6.0),
+    tibble (>= 3.0.0)
 Suggests:
     dplyr (>= 1.1.0),
     forcats (>= 1.0.0),
@@ -37,7 +38,6 @@ Suggests:
     rlang (>= 1.1.0),
     rmarkdown,
     testthat (>= 3.0.0),
-    tibble (>= 3.0.0),
     tidyr (>= 1.3.0)
 Config/testthat/edition: 3
 URL: https://hypnor.circadia-lab.uk, https://github.com/circadia-bio/hypnoR
