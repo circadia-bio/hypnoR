@@ -1,5 +1,10 @@
 ## hypnoR (development version)
 
+* Implemented `compute_transitions()`: stage-to-stage transition matrix
+  (counts or row-normalised probabilities) plus fragmentation index and
+  wake-transition count. New `include_wake` argument controls whether
+  Wake is included as a state in the matrix; fragmentation metrics always
+  use the full epoch sequence regardless of this setting.
 * Implemented `compute_sleep_architecture()`: TST, TIB, SE, SOL, WASO, REM/SWS
   latency, and stage percentages, all resolution-agnostic. Sleep onset is
   defined as the first non-`"W"` epoch for both AASM and coarse hypnograms.
