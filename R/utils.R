@@ -39,6 +39,19 @@
   if (length(v) > 0L) as.character(v[[1L]]) else NA_character_
 }
 
+#' Zero-row cycles tibble with the correct column types
+#' @noRd
+.empty_cycles_tibble <- function() {
+  tibble::tibble(
+    cycle       = integer(0),
+    start_epoch = integer(0),
+    end_epoch   = integer(0),
+    nrem_min    = numeric(0),
+    rem_min     = numeric(0),
+    cycle_min   = numeric(0)
+  )
+}
+
 #' Standard AASM stage order (deepest sleep first, wake last)
 #' @noRd
 .aasm_levels <- function() c("N3", "N2", "N1", "REM", "W")

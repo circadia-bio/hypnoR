@@ -1,5 +1,13 @@
 ## hypnoR (development version)
 
+* Implemented `compute_cycles()`: NREM/REM cycle segmentation for full AASM
+  hypnograms, with two selectable algorithms. `method = "feinberg_floyd"`
+  (default) treats any maximal contiguous REM run of at least
+  `min_rem_epochs` as a REM period, with no tolerance for interruption.
+  `method = "aasm"` merges REM runs separated by a gap of at most
+  `rem_gap_min` minutes (default 15) into a single REM period before
+  applying the `min_rem_epochs` threshold. Errors on coarse hypnograms,
+  which have no REM stage to segment on.
 * Implemented `compute_transitions()`: stage-to-stage transition matrix
   (counts or row-normalised probabilities) plus fragmentation index and
   wake-transition count. New `include_wake` argument controls whether
