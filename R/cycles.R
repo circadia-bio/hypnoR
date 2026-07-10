@@ -41,7 +41,10 @@
 #' @return A tibble with one row per detected (complete) cycle:
 #'   \describe{
 #'     \item{cycle}{Integer cycle index.}
-#'     \item{start_epoch,end_epoch}{First and last epoch of the cycle.}
+#'     \item{start_epoch,end_epoch}{First and last epoch of the cycle, using
+#'       the values in `hypnogram$epoch` itself -- not row position. These
+#'       differ whenever `hypnogram` doesn't start at epoch 1 (e.g. after
+#'       subsetting a larger recording to a sleep-period window).}
 #'     \item{nrem_min,rem_min}{Duration of the NREM and REM portions of
 #'       the cycle (minutes). `nrem_min` is the whole non-REM portion of
 #'       the cycle, including any brief interruption epochs absorbed into
@@ -119,8 +122,8 @@ compute_cycles <- function(hypnogram,
     rem_min_i <- .epochs_to_min(rem_n, epoch_sec)
 
     cyc  <- c(cyc, length(cyc) + 1L)
-    se   <- c(se, cycle_start)
-    ee   <- c(ee, rem_end)
+    se   <- c(se, hypnogram$epoch[cycle_start])
+    ee   <- c(ee, hypnogram$epoch[rem_end])
     nrem <- c(nrem, tot_min_i - rem_min_i)
     rem  <- c(rem, rem_min_i)
     tot  <- c(tot, tot_min_i)

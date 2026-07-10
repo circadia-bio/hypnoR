@@ -44,6 +44,50 @@ test_that("plot_hypnogram() accepts a bare data frame", {
   expect_s3_class(plot_hypnogram(bare), "ggplot")
 })
 
+# ── x_axis: clock time vs elapsed hours ─────────────────────────────────────────────
+
+make_aasm_hyp_with_time <- function() {
+  stage <- c("W", "W", "N1", "N2", "N3", "N2", "REM", "REM", "N2", "W")
+  tbl <- tibble::tibble(
+    epoch = seq_along(stage),
+    time  = as.POSIXct("2024-01-01 22:00:00", tz = "UTC") + (seq_along(stage) - 1) * 30,
+    stage = stage
+  )
+  new_hypnogram(tbl)
+}
+
+test_that("plot_hypnogram() defaults to clock time when time is available (x_axis = 'auto')", {
+  p <- plot_hypnogram(make_aasm_hyp_with_time())
+  expect_equal(p$labels$x, "Time")
+  expect_s3_class(p$scales$get_scales("x"), "ScaleContinuousDatetime")
+})
+
+test_that("plot_hypnogram() falls back to elapsed hours when time is unavailable (x_axis = 'auto')", {
+  p <- plot_hypnogram(make_aasm_hyp())  # no time column populated -> all NA
+  expect_equal(p$labels$x, "Time (hours)")
+})
+
+test_that("plot_hypnogram() x_axis = 'hours' forces elapsed hours even when time is available", {
+  p <- plot_hypnogram(make_aasm_hyp_with_time(), x_axis = "hours")
+  expect_equal(p$labels$x, "Time (hours)")
+})
+
+test_that("plot_hypnogram() x_axis = 'time' errors when time is entirely NA", {
+  expect_error(
+    plot_hypnogram(make_aasm_hyp(), x_axis = "time"),
+    "non-.*time.*values"
+  )
+})
+
+test_that("plot_hypnogram() cycle boundaries align correctly on a clock-time x-axis", {
+  hyp <- make_aasm_hyp_with_time()
+  cyc <- compute_cycles(hyp, min_rem_epochs = 2)
+
+  p <- plot_hypnogram(hyp, cycles = cyc)
+  vline_layer <- p$layers[[length(p$layers)]]
+  expect_s3_class(vline_layer$geom, "GeomVline")
+})
+
 # ── plot_architecture() ───────────────────────────────────────────────────────
 
 test_that("plot_architecture() works for AASM and coarse architecture tibbles", {

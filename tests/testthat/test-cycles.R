@@ -119,3 +119,39 @@ test_that("compute_cycles() accepts a bare data frame and normalises it internal
   cyc <- compute_cycles(bare)
   expect_equal(nrow(cyc), 1)
 })
+
+# ── Regression: start_epoch/end_epoch must use hypnogram$epoch, not row position ─
+# Every fixture above uses epoch = 1:n, where position and epoch number
+# happen to coincide -- which is exactly how this bug went unnoticed until a
+# real subsetted recording (epoch column starting at 319, not 1) exposed it.
+
+test_that("compute_cycles() reports actual epoch numbers, not row position, when epoch doesn't start at 1", {
+  stage <- c("W", "W", "N2", "N2", "N2", rep("REM", 5), "W", "W")
+  offset_epoch_numbers <- 1000L + seq_along(stage)  # e.g. 1001:1012, mimicking a subset
+  hyp <- new_hypnogram(tibble::tibble(epoch = offset_epoch_numbers, stage = stage))
+
+  cyc <- compute_cycles(hyp, min_rem_epochs = 5)
+
+  expect_equal(nrow(cyc), 1)
+  # onset is row 3 (first non-W) -> epoch number 1000+3 = 1003
+  expect_equal(cyc$start_epoch, 1003)
+  # REM run ends at row 10 -> epoch number 1000+10 = 1010
+  expect_equal(cyc$end_epoch, 1010)
+  # Durations should be unaffected by the epoch-numbering offset
+  expect_equal(cyc$cycle_min, .epochs_to_min(1010 - 1003 + 1, 30))
+})
+
+test_that("compute_cycles() start_epoch/end_epoch survive subsetting a larger hypnogram", {
+  stage <- c(rep("W", 5), "N2", "N2", "N2", rep("REM", 5), "N2", rep("W", 5))
+  full  <- new_hypnogram(tibble::tibble(epoch = seq_along(stage), stage = stage))
+
+  # Subset to a sub-range not starting at epoch 1, as we would when isolating
+  # a sleep period out of a much longer recording
+  sub <- full[full$epoch >= 4L, ]
+  sub <- new_hypnogram(sub)
+
+  cyc <- compute_cycles(sub, min_rem_epochs = 5)
+  expect_equal(nrow(cyc), 1)
+  # onset in the subset is the first non-W epoch, which is epoch 6 (not row 3)
+  expect_equal(cyc$start_epoch, 6)
+})

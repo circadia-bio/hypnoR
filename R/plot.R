@@ -10,9 +10,20 @@
 #'   [new_hypnogram()] or [read_hypnogram()], or any data frame with at
 #'   minimum `epoch` and `stage` columns -- it will be passed through
 #'   [new_hypnogram()] automatically if not already a `hypnor_hypnogram`.
-#'   Epoch duration is read from the object's `epoch_sec` attribute; the
-#'   x-axis is elapsed hours since the first epoch (not clock time, since
-#'   `time` may be unavailable for coarse/synthetic hypnograms).
+#'   Epoch duration is read from the object's `epoch_sec` attribute.
+#' @param x_axis `"auto"` (default), `"time"`, or `"hours"`:
+#'   \describe{
+#'     \item{`"auto"`}{Uses actual clock time (from the `time` column) if
+#'       `hypnogram` carries any non-`NA` timestamps, otherwise falls back
+#'       to elapsed hours since the first epoch.}
+#'     \item{`"time"`}{Forces clock time; errors if `time` is entirely
+#'       `NA` (no `start_time` was supplied to [new_hypnogram()] or
+#'       `mrpheus::export_hypnogram()`).}
+#'     \item{`"hours"`}{Forces elapsed hours since the first epoch,
+#'       regardless of whether real timestamps are available.}
+#'   }
+#' @param date_breaks Only used when plotting clock time. Passed to
+#'   [ggplot2::scale_x_datetime()]'s `date_breaks`. Default `"2 hours"`.
 #' @param cycles Optional: the tibble returned by [compute_cycles()]. When
 #'   supplied, a dashed vertical line is drawn at the start of each cycle.
 #' @param colours Named character vector mapping stage labels to hex
@@ -28,11 +39,16 @@
 #' hyp <- read_hypnogram("night_001.csv")
 #' plot_hypnogram(hyp)
 #' plot_hypnogram(hyp, cycles = compute_cycles(hyp))
+#' plot_hypnogram(hyp, x_axis = "hours")
 #' }
 plot_hypnogram <- function(hypnogram,
-                           cycles  = NULL,
-                           colours = NULL,
-                           title   = NULL) {
+                           x_axis       = c("auto", "time", "hours"),
+                           date_breaks = "2 hours",
+                           cycles       = NULL,
+                           colours      = NULL,
+                           title        = NULL) {
+  x_axis <- match.arg(x_axis)
+
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     cli::cli_abort("Package {.pkg ggplot2} is required for {.fn plot_hypnogram}.")
   }
@@ -40,23 +56,50 @@ plot_hypnogram <- function(hypnogram,
     hypnogram <- new_hypnogram(hypnogram)
   }
 
+  has_time <- !all(is.na(hypnogram$time))
+
+  if (x_axis == "time" && !has_time) {
+    cli::cli_abort(c(
+      "{.arg hypnogram} has no non-{.val NA} {.field time} values.",
+      "i" = "Pass {.code x_axis = \"hours\"}, or supply {.arg start_time} to \\
+             {.fn new_hypnogram} / {.code mrpheus::export_hypnogram()} so real \\
+             clock times are available."
+    ))
+  }
+  use_time <- has_time && x_axis != "hours"
+
   epoch_sec <- attr(hypnogram, "epoch_sec") %||% 30
   colours   <- colours %||% .hypno_stage_colours()
 
-  df       <- hypnogram
-  df$hours <- (df$epoch - df$epoch[1L]) * epoch_sec / 3600
+  df <- hypnogram
+  if (use_time) {
+    df$x <- df$time
+  } else {
+    df$x <- (df$epoch - df$epoch[1L]) * epoch_sec / 3600
+  }
 
-  p <- ggplot2::ggplot(df, ggplot2::aes(x = hours, y = stage, group = 1)) +
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = stage, group = 1)) +
     ggplot2::geom_step(colour = "grey40", linewidth = 0.4) +
     ggplot2::geom_point(ggplot2::aes(colour = stage), size = 1.2, show.legend = FALSE) +
     ggplot2::scale_colour_manual(values = colours, drop = TRUE) +
-    ggplot2::labs(x = "Time (hours)", y = NULL, title = title) +
+    ggplot2::labs(y = NULL, title = title) +
     .hypno_theme()
 
+  if (use_time) {
+    p <- p + ggplot2::scale_x_datetime(date_breaks = date_breaks, date_labels = "%H:%M") +
+      ggplot2::labs(x = "Time")
+  } else {
+    p <- p + ggplot2::labs(x = "Time (hours)")
+  }
+
   if (!is.null(cycles) && nrow(cycles) > 0L) {
-    boundary_hours <- (cycles$start_epoch - df$epoch[1L]) * epoch_sec / 3600
+    if (use_time) {
+      boundary_x <- df$time[match(cycles$start_epoch, df$epoch)]
+    } else {
+      boundary_x <- (cycles$start_epoch - df$epoch[1L]) * epoch_sec / 3600
+    }
     p <- p + ggplot2::geom_vline(
-      xintercept = boundary_hours,
+      xintercept = boundary_x,
       linetype   = "dashed",
       colour     = "grey60"
     )

@@ -1,5 +1,27 @@
 ## hypnoR (development version)
 
+* **Bugfix:** `compute_cycles()`'s `start_epoch`/`end_epoch` columns were
+  reporting row position within `hypnogram`, not the actual values in
+  `hypnogram$epoch` -- identical whenever `epoch` runs `1:n` (true of every
+  fixture in the test suite so far), but wrong for any hypnogram that
+  doesn't start at epoch 1, e.g. after subsetting a longer recording down
+  to a sleep-period window. Durations (`nrem_min`/`rem_min`/`cycle_min`)
+  were unaffected, since those were already computed from row-position
+  differences rather than the epoch column.
+* Added `smooth_hypnogram()`, a hypnogram-level cleanup step for raw
+  unsmoothed per-epoch staging (e.g. `mrpheus::stage_epochs()`, which has
+  no temporal continuity constraint and can produce isolated single-epoch
+  stage flips). Two label-only rules, applicable independently or in
+  sequence: `"aasm_isolated"` (default) reassigns a single epoch flanked
+  identically on both sides; `"min_run"` merges any run shorter than
+  `min_run_epochs` into whichever flanking run is longer, regardless of
+  whether the flanks agree. The original labels are preserved in a new
+  `stage_raw` column.
+* `plot_hypnogram()` gains an `x_axis` argument (`"auto"` (default),
+  `"time"`, or `"hours"`). When the hypnogram carries real timestamps
+  (i.e. `start_time` was supplied to `new_hypnogram()` or
+  `mrpheus::export_hypnogram()`), the x-axis now shows actual clock time
+  by default instead of always using elapsed hours since the first epoch.
 * Implemented `plot_hypnogram()`, `plot_architecture()`, and
   `plot_transition_matrix()`. All three use a runtime `ggplot2` check
   rather than a hard dependency (consistent with the rest of the
