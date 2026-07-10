@@ -175,9 +175,10 @@ reference:
   - new_hypnogram
 
 - title: "Preprocessing"
-  desc: "Clean up raw staging before computing metrics."
+  desc: "Clean up and window a hypnogram before computing metrics."
   contents:
   - smooth_hypnogram
+  - window_hypnogram
 
 - title: "Ingestion"
   desc: "Read hypnograms from common file formats."

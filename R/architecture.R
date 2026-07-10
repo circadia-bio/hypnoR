@@ -19,9 +19,11 @@
 #'   Epoch duration and staging resolution are read from the object's
 #'   `epoch_sec` and `resolution` attributes.
 #' @param lights_off,lights_on Optional `POSIXct` timestamps for lights-off
-#'   and lights-on. When both are supplied, TIB (time in bed) and SE (sleep
-#'   efficiency) are computed relative to this period; otherwise TIB
-#'   defaults to the full span of the recording (first to last epoch).
+#'   and lights-on. When both are supplied, `hypnogram` is first restricted
+#'   to this window via [window_hypnogram()] -- every metric (`TST`, `SOL`,
+#'   `WASO`, stage percentages, everything) is computed relative to the
+#'   window, not just `TIB`/`SE`. Otherwise `TIB` defaults to the full span
+#'   of `hypnogram` as passed in (first to last epoch).
 #'
 #' @return A one-row tibble with columns:
 #'   \describe{
@@ -65,6 +67,11 @@ compute_sleep_architecture <- function(hypnogram,
     lights_on  <- NULL
   }
 
+  windowed <- !is.null(lights_off) && !is.null(lights_on)
+  if (windowed) {
+    hypnogram <- window_hypnogram(hypnogram, lights_off = lights_off, lights_on = lights_on)
+  }
+
   epoch_sec <- attr(hypnogram, "epoch_sec") %||% 30
   res       <- attr(hypnogram, "resolution") %||% .detect_resolution(hypnogram)
 
@@ -93,7 +100,7 @@ compute_sleep_architecture <- function(hypnogram,
     NA_real_
   }
 
-  if (!is.null(lights_off) && !is.null(lights_on)) {
+  if (windowed) {
     tib_min <- as.numeric(difftime(lights_on, lights_off, units = "mins"))
   } else {
     tib_min <- .epochs_to_min(n, epoch_sec)

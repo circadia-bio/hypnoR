@@ -6,43 +6,81 @@
 \usage{
 compute_cycles(
   hypnogram,
-  method = "feinberg_floyd",
-  epoch_sec = 30L,
-  min_rem_epochs = 5L
+  method = c("feinberg_floyd", "aasm"),
+  min_rem_epochs = 5L,
+  rem_gap_min = 15
 )
 }
 \arguments{
-\item{hypnogram}{A tibble returned by \code{\link[=read_hypnogram]{read_hypnogram()}}.}
+\item{hypnogram}{A \code{hypnor_hypnogram} object as returned by
+\code{\link[=new_hypnogram]{new_hypnogram()}} or \code{\link[=read_hypnogram]{read_hypnogram()}}, or any data frame with at
+minimum \code{epoch} and \code{stage} columns -- it will be passed through
+\code{\link[=new_hypnogram]{new_hypnogram()}} automatically if not already a \code{hypnor_hypnogram}.
+Epoch duration is read from the object's \code{epoch_sec} attribute.}
 
-\item{method}{\code{"feinberg_floyd"} (default) or \code{"aasm"}.}
+\item{method}{\code{"feinberg_floyd"} (default) or \code{"aasm"}:
+\describe{
+\item{\code{"feinberg_floyd"}}{Feinberg & Floyd (1979)'s original,
+simplest rule: a REM period is any maximal contiguous run of REM
+epochs of at least \code{min_rem_epochs}. No tolerance for
+interruption -- a single non-REM epoch ends the REM period.}
+\item{\code{"aasm"}}{A simplified AASM-compatible variant that tolerates
+brief non-REM interruptions within a REM period: consecutive REM
+runs separated by a gap of at most \code{rem_gap_min} minutes are
+merged into a single REM period before the \code{min_rem_epochs}
+threshold is applied to their combined REM epoch count. This is
+a practical approximation, not a citable AASM standard -- the
+AASM manual itself does not define sleep-cycle segmentation
+rules.}
+}}
 
-\item{epoch_sec}{Epoch duration in seconds.  Default \code{30}.}
+\item{min_rem_epochs}{Minimum number of REM epochs (after any merging
+under \code{method = "aasm"}) for a run to qualify as a REM period.
+Default \code{5} (2.5 min at 30-s epochs).}
 
-\item{min_rem_epochs}{Minimum number of consecutive REM epochs to qualify
-as a REM period.  Default \code{5} (2.5 min at 30-s epochs).}
+\item{rem_gap_min}{Only used when \code{method = "aasm"}. Maximum gap, in
+minutes, of non-REM epochs between two REM runs for them to be
+merged into a single REM period. Default \code{15}.}
 }
 \value{
-A tibble with one row per detected cycle:
+A tibble with one row per detected (complete) cycle:
 \describe{
 \item{cycle}{Integer cycle index.}
-\item{start_epoch,end_epoch}{First and last epoch of the cycle.}
-\item{nrem_min,rem_min}{Duration of NREM and REM portions (minutes).}
+\item{start_epoch,end_epoch}{First and last epoch of the cycle, using
+the values in \code{hypnogram$epoch} itself -- not row position. These
+differ whenever \code{hypnogram} doesn't start at epoch 1 (e.g. after
+subsetting a larger recording to a sleep-period window).}
+\item{nrem_min,rem_min}{Duration of the NREM and REM portions of
+the cycle (minutes). \code{nrem_min} is the whole non-REM portion of
+the cycle, including any brief interruption epochs absorbed into
+a merged REM period under \code{method = "aasm"}; \code{rem_min} counts
+only actual REM epochs. \code{nrem_min + rem_min == cycle_min}.}
 \item{cycle_min}{Total cycle duration (minutes).}
 }
+Zero rows if no qualifying REM period is found (e.g. no sleep, or no
+REM at all).
 }
 \description{
-Segments a hypnogram into NREM/REM cycles using either Feinberg & Floyd
-(1979) rules or a simplified AASM-compatible algorithm.  Only applicable
-to full AASM hypnograms; returns an informative error for coarse
-actigraphy-derived hypnograms.
+Segments a full AASM hypnogram into NREM/REM cycles. A cycle is defined
+as an NREM stretch followed by a qualifying REM period; only \emph{complete}
+cycles are returned -- a trailing NREM stretch at the end of the
+recording that is not followed by a qualifying REM period does not
+produce a final row.
+}
+\details{
+Only applicable to full AASM hypnograms (coarse actigraphy-derived
+hypnograms have no REM stage and so cannot be cycle-segmented); this
+function errors on a coarse hypnogram rather than silently returning an
+empty result.
 }
 \examples{
 \dontrun{
 hyp <- read_hypnogram("night_001.csv")
 compute_cycles(hyp)
+compute_cycles(hyp, method = "aasm", rem_gap_min = 10)
 }
 }
 \references{
 Feinberg, I., & Floyd, T. C. (1979). Systematic trends across the night
-in human sleep cycles. \emph{Psychophysiology}, 16(3), 283–291.
+in human sleep cycles. \emph{Psychophysiology}, 16(3), 283-291.
 }

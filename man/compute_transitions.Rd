@@ -4,35 +4,53 @@
 \alias{compute_transitions}
 \title{Compute stage-transition statistics}
 \usage{
-compute_transitions(hypnogram, normalise = TRUE)
+compute_transitions(hypnogram, normalise = TRUE, include_wake = TRUE)
 }
 \arguments{
-\item{hypnogram}{A tibble returned by \code{\link[=read_hypnogram]{read_hypnogram()}}.}
+\item{hypnogram}{A \code{hypnor_hypnogram} object as returned by
+\code{\link[=new_hypnogram]{new_hypnogram()}} or \code{\link[=read_hypnogram]{read_hypnogram()}}, or any data frame with at
+minimum \code{epoch} and \code{stage} columns -- it will be passed through
+\code{\link[=new_hypnogram]{new_hypnogram()}} automatically if not already a \code{hypnor_hypnogram}.}
 
 \item{normalise}{If \code{TRUE} (default), each row of the transition count
 matrix is divided by its row sum to give transition probabilities.
-If \code{FALSE}, raw transition counts are returned.}
+Rows for a from-stage that is never visited are returned as \code{NA}
+rather than \code{NaN}. If \code{FALSE}, raw transition counts are returned.}
+
+\item{include_wake}{If \code{TRUE} (default), \code{"W"} is included as a state in
+the transition matrix like any other stage (including \code{W}->\code{W}
+self-transitions). If \code{FALSE}, the matrix is restricted to sleep-stage
+transitions only: any transition into or out of \code{"W"} is excluded
+before the matrix is built.}
 }
 \value{
 A list with two elements:
 \describe{
-\item{matrix}{A square tibble (stages × stages) of transition
-probabilities or counts.  Row = \emph{from} stage, column = \emph{to} stage.}
+\item{matrix}{A tibble with one row per \emph{from} stage: a \code{from}
+column plus one numeric column per \emph{to} stage (transition
+probabilities or counts).}
 \item{fragmentation}{A one-row tibble with:
 \describe{
-\item{n_transitions}{Total number of stage transitions.}
+\item{n_transitions}{Number of epoch-to-epoch stage changes
+(self-transitions do not count).}
 \item{fragmentation_index}{Proportion of epochs that are
 followed by a different stage.}
-\item{wake_transitions}{Number of transitions to Wake (proxy for
-arousal burden).}
+\item{wake_transitions}{Number of transitions into Wake (proxy
+for arousal burden).}
 }
 }
 }
 }
 \description{
 Builds a stage-to-stage transition probability matrix and derives
-fragmentation indices from a staged hypnogram.  Works with both
-full AASM and coarse actigraphy-derived staging.
+fragmentation indices from a staged hypnogram. Works with both full AASM
+and coarse actigraphy-derived staging.
+}
+\details{
+Fragmentation metrics (\code{n_transitions}, \code{fragmentation_index},
+\code{wake_transitions}) are always computed from the full epoch sequence,
+wake included, regardless of \code{include_wake} -- that argument only
+controls the shape of the returned \code{matrix}.
 }
 \examples{
 \dontrun{
@@ -40,5 +58,8 @@ hyp  <- read_hypnogram("night_001.csv")
 trans <- compute_transitions(hyp)
 trans$matrix
 trans$fragmentation
+
+# Sleep-stage transitions only, excluding Wake
+compute_transitions(hyp, include_wake = FALSE)
 }
 }

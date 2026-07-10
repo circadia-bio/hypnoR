@@ -6,25 +6,41 @@
 \usage{
 plot_hypnogram(
   hypnogram,
-  epoch_sec = 30L,
+  x_axis = c("auto", "time", "hours"),
+  date_breaks = "2 hours",
+  cycles = NULL,
   colours = NULL,
-  show_cycles = FALSE,
   title = NULL
 )
 }
 \arguments{
-\item{hypnogram}{A tibble returned by \code{\link[=read_hypnogram]{read_hypnogram()}}.}
+\item{hypnogram}{A \code{hypnor_hypnogram} object as returned by
+\code{\link[=new_hypnogram]{new_hypnogram()}} or \code{\link[=read_hypnogram]{read_hypnogram()}}, or any data frame with at
+minimum \code{epoch} and \code{stage} columns -- it will be passed through
+\code{\link[=new_hypnogram]{new_hypnogram()}} automatically if not already a \code{hypnor_hypnogram}.
+Epoch duration is read from the object's \code{epoch_sec} attribute.}
 
-\item{epoch_sec}{Epoch duration in seconds, used to construct the
-time axis.  Default \code{30}.}
+\item{x_axis}{\code{"auto"} (default), \code{"time"}, or \code{"hours"}:
+\describe{
+\item{\code{"auto"}}{Uses actual clock time (from the \code{time} column) if
+\code{hypnogram} carries any non-\code{NA} timestamps, otherwise falls back
+to elapsed hours since the first epoch.}
+\item{\code{"time"}}{Forces clock time; errors if \code{time} is entirely
+\code{NA} (no \code{start_time} was supplied to \code{\link[=new_hypnogram]{new_hypnogram()}} or
+\code{mrpheus::export_hypnogram()}).}
+\item{\code{"hours"}}{Forces elapsed hours since the first epoch,
+regardless of whether real timestamps are available.}
+}}
 
-\item{colours}{Named character vector mapping stage labels to hex colours.
-Defaults to the Circadia Lab palette via \code{circadia::domain_colour_for()},
-if available, otherwise a built-in fallback.}
+\item{date_breaks}{Only used when plotting clock time. Passed to
+\code{\link[ggplot2:scale_x_datetime]{ggplot2::scale_x_datetime()}}'s \code{date_breaks}. Default \code{"2 hours"}.}
 
-\item{show_cycles}{If \code{TRUE} and cycle information is available (a \code{cycle}
-column is present in \code{hypnogram}), cycle boundaries are overlaid as
-vertical dashed lines.  Default \code{FALSE}.}
+\item{cycles}{Optional: the tibble returned by \code{\link[=compute_cycles]{compute_cycles()}}. When
+supplied, a dashed vertical line is drawn at the start of each cycle.}
+
+\item{colours}{Named character vector mapping stage labels to hex
+colours. Defaults to a built-in palette drawn from the Circadia Lab
+colours. Pass your own named vector to override.}
 
 \item{title}{Optional plot title.}
 }
@@ -32,14 +48,17 @@ vertical dashed lines.  Default \code{FALSE}.}
 A \code{ggplot} object.
 }
 \description{
-Renders a classic stage-over-time hypnogram using \code{ggplot2} and
-\code{theme_circadia()}.  Accepts both full AASM and coarse staging; the
-y-axis order and colour mapping are set automatically from the staging
-resolution detected in \code{hypnogram}.
+Renders a classic stage-over-time hypnogram using \code{ggplot2} and a
+Circadia Lab colour palette. Accepts both full AASM and coarse staging;
+the y-axis order (deepest sleep at the bottom, Wake at the top) and
+colour mapping are set automatically from the staging levels present in
+\code{hypnogram}.
 }
 \examples{
 \dontrun{
 hyp <- read_hypnogram("night_001.csv")
 plot_hypnogram(hyp)
+plot_hypnogram(hyp, cycles = compute_cycles(hyp))
+plot_hypnogram(hyp, x_axis = "hours")
 }
 }

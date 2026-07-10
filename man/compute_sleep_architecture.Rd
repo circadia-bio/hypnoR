@@ -4,49 +4,58 @@
 \alias{compute_sleep_architecture}
 \title{Compute sleep architecture metrics}
 \usage{
-compute_sleep_architecture(
-  hypnogram,
-  epoch_sec = 30L,
-  lights_off = NULL,
-  lights_on = NULL
-)
+compute_sleep_architecture(hypnogram, lights_off = NULL, lights_on = NULL)
 }
 \arguments{
-\item{hypnogram}{A tibble returned by \code{\link[=read_hypnogram]{read_hypnogram()}}, or any tibble
-with at minimum columns \code{epoch} (integer) and \code{stage} (factor).}
+\item{hypnogram}{A \code{hypnor_hypnogram} object as returned by
+\code{\link[=new_hypnogram]{new_hypnogram()}} or \code{\link[=read_hypnogram]{read_hypnogram()}}, or any data frame with at
+minimum \code{epoch} and \code{stage} columns -- it will be passed through
+\code{\link[=new_hypnogram]{new_hypnogram()}} automatically if not already a \code{hypnor_hypnogram}.
+Epoch duration and staging resolution are read from the object's
+\code{epoch_sec} and \code{resolution} attributes.}
 
-\item{epoch_sec}{Epoch duration in seconds.  Default \code{30}.}
-
-\item{lights_off, lights_on}{Optional \code{POSIXct} timestamps for lights-off and
-lights-on.  When supplied, TIB (time in bed) and SE (sleep efficiency) are
-computed relative to the recording period; otherwise the first and last
-sleep epoch bound the period.}
+\item{lights_off, lights_on}{Optional \code{POSIXct} timestamps for lights-off
+and lights-on. When both are supplied, \code{hypnogram} is first restricted
+to this window via \code{\link[=window_hypnogram]{window_hypnogram()}} -- every metric (\code{TST}, \code{SOL},
+\code{WASO}, stage percentages, everything) is computed relative to the
+window, not just \code{TIB}/\code{SE}. Otherwise \code{TIB} defaults to the full span
+of \code{hypnogram} as passed in (first to last epoch).}
 }
 \value{
 A one-row tibble with columns:
 \describe{
 \item{tst_min}{Total sleep time (minutes).}
-\item{tib_min}{Time in bed (minutes).  \code{NA} if \code{lights_off}/\code{lights_on}
-not supplied.}
-\item{se_pct}{Sleep efficiency (percent).  \code{NA} if TIB unavailable.}
-\item{sol_min}{Sleep onset latency (minutes).}
-\item{waso_min}{Wake after sleep onset (minutes).}
-\item{rem_lat_min}{REM latency (minutes).  \code{NA} for coarse hypnograms.}
-\item{sws_lat_min}{SWS (N3) latency (minutes).  \code{NA} for coarse
-hypnograms.}
-\item{pct_n1,pct_n2,pct_n3,pct_rem}{Stage percentages of TST.  \code{NA}
-for stages absent in the hypnogram.}
-\item{pct_sleep,pct_quiet_sleep}{Stage percentages for coarse
-hypnograms.  \code{NA} for full AASM hypnograms.}
+\item{tib_min}{Time in bed (minutes).}
+\item{se_pct}{Sleep efficiency (percent) = TST / TIB * 100.}
+\item{sol_min}{Sleep onset latency (minutes). \code{NA} if no sleep
+epoch is present.}
+\item{waso_min}{Wake after sleep onset (minutes): wake epochs
+between the first and last sleep epoch. \code{NA} if no sleep epoch
+is present.}
+\item{rem_lat_min}{REM latency from sleep onset (minutes). \code{NA} for
+coarse hypnograms or if no REM epoch is present.}
+\item{sws_lat_min}{SWS (N3) latency from sleep onset (minutes). \code{NA}
+for coarse hypnograms or if no N3 epoch is present.}
+\item{pct_n1,pct_n2,pct_n3,pct_rem}{Stage percentages of TST. \code{NA}
+for coarse hypnograms.}
+\item{pct_sleep,pct_quiet_sleep}{Stage percentages of TST for coarse
+hypnograms. \code{NA} for full AASM hypnograms.}
 \item{staging_resolution}{\code{"aasm"} or \code{"coarse"}.}
 }
 }
 \description{
 Derives standard sleep architecture summary statistics from a staged
-hypnogram.  All metrics are resolution-agnostic: the function computes
+hypnogram. All metrics are resolution-agnostic: the function computes
 every metric that is possible given the available staging levels and
-silently omits metrics that require stages not present in the hypnogram
-(e.g. REM latency requires a full AASM hypnogram).
+returns \code{NA} for metrics that require stages not present at the detected
+resolution (e.g. REM/SWS latency and AASM stage percentages require a
+full AASM hypnogram).
+}
+\details{
+Sleep onset is defined as the first epoch with any non-\code{"W"} stage --
+this applies uniformly to full AASM hypnograms (where \code{N1} counts as
+sleep onset) and coarse hypnograms (where \code{"Sleep"} or \code{"Quiet sleep"}
+both count).
 }
 \examples{
 \dontrun{

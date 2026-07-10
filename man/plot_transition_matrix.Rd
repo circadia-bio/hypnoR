@@ -13,12 +13,13 @@ plot_transition_matrix(
 }
 \arguments{
 \item{transitions}{The \code{matrix} element of the list returned by
-\code{\link[=compute_transitions]{compute_transitions()}}.}
+\code{\link[=compute_transitions]{compute_transitions()}}: a tibble with a \code{from} column plus one
+numeric column per \emph{to} stage.}
 
 \item{label_values}{If \code{TRUE} (default), cell values are printed inside
-each tile.}
+each tile. \code{NA} cells (unvisited from-stages) are left blank.}
 
-\item{digits}{Number of decimal places for cell labels.  Default \code{2}.}
+\item{digits}{Number of decimal places for cell labels. Default \code{2}.}
 
 \item{title}{Optional plot title.}
 }
@@ -27,8 +28,7 @@ A \code{ggplot} object.
 }
 \description{
 Renders the transition probability (or count) matrix returned by
-\code{\link[=compute_transitions]{compute_transitions()}} as a heatmap using \code{ggplot2} and
-\code{theme_circadia()}.
+\code{\link[=compute_transitions]{compute_transitions()}} as a heatmap using \code{ggplot2}.
 }
 \examples{
 \dontrun{

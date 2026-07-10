@@ -6,11 +6,14 @@
 \alias{hypnoR-package}
 \title{hypnoR: Hypnogram Handling, Plotting, and Sleep Architecture Metrics}
 \description{
+\if{html}{\figure{logo.svg}{options: style='float: right' alt='logo' width='120'}}
+
 Provides a staging-agnostic layer for hypnogram ingestion, sleep architecture metric computation, cycle segmentation, and transition analysis. Accepts full AASM-staged hypnograms (W / N1 / N2 / N3 / REM) from mrpheus and coarser actigraphy-derived hypnograms (W / Sleep / Quiet sleep) from zeitR; all metric functions degrade gracefully depending on staging resolution. Includes publication-ready plotting via theme_circadia(). Designed as the hypnogram layer of the Circadia Lab ecosystem, feeding into syncR::sync().
 }
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://hypnor.circadia-lab.uk}
   \item \url{https://github.com/circadia-bio/hypnoR}
   \item Report bugs at \url{https://github.com/circadia-bio/hypnoR/issues}
 }

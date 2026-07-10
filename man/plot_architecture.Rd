@@ -6,19 +6,20 @@
 \usage{
 plot_architecture(
   architecture,
-  metric = "duration",
+  metric = c("duration", "percentage"),
   colours = NULL,
   title = NULL
 )
 }
 \arguments{
-\item{architecture}{A one-row tibble returned by
-\code{\link[=compute_sleep_architecture]{compute_sleep_architecture()}}, or a multi-row tibble for comparing
-multiple nights (requires a \code{night} or \code{id} grouping column).}
+\item{architecture}{A tibble returned by \code{\link[=compute_sleep_architecture]{compute_sleep_architecture()}}
+-- either a single row, or multiple rows for comparing several nights,
+in which case a \code{night} or \code{id} column (if present) is used to facet
+the plot into one panel per night.}
 
 \item{metric}{\code{"duration"} (minutes, default) or \code{"percentage"} of TST.}
 
-\item{colours}{Named character vector of stage colours.  See
+\item{colours}{Named character vector of stage colours. See
 \code{\link[=plot_hypnogram]{plot_hypnogram()}} for defaults.}
 
 \item{title}{Optional plot title.}
@@ -28,12 +29,13 @@ A \code{ggplot} object.
 }
 \description{
 Renders stage durations or percentages as a horizontal bar chart using
-\code{ggplot2} and \code{theme_circadia()}.
+\code{ggplot2} and a Circadia Lab colour palette.
 }
 \examples{
 \dontrun{
 hyp  <- read_hypnogram("night_001.csv")
 arch <- compute_sleep_architecture(hyp)
 plot_architecture(arch)
+plot_architecture(arch, metric = "percentage")
 }
 }

@@ -72,8 +72,7 @@ nrow(cyc_ff_smooth)  # compare: strict method, no gap tolerance
 # since they're nowhere near the main nocturnal REM cluster -- inflating the
 # count regardless of how well the hypnogram is smoothed. Check by
 # restricting to just the sleep-period epochs:
-hyp_sleep_only <- hyp_smooth_4[hyp_smooth_4$epoch >= 1001L & hyp_smooth_4$epoch <= 1950L, ]
-hyp_sleep_only <- new_hypnogram(hyp_sleep_only)  # re-attach epoch_sec/resolution after subsetting
+hyp_sleep_only <- window_hypnogram(hyp_smooth_4, from_epoch = 1001L, to_epoch = 1950L)
 
 cyc_aasm_sleep_only <- compute_cycles(hyp_sleep_only, method = "aasm")
 nrow(cyc_aasm_sleep_only)
@@ -92,8 +91,7 @@ offset_epoch <- hyp_smooth_4$epoch[sleep_idx[length(sleep_idx)]]
 c(onset_epoch = onset_epoch, offset_epoch = offset_epoch,
   duration_h  = (offset_epoch - onset_epoch + 1) * 30 / 3600)
 
-hyp_sleep_period <- hyp_smooth_4[hyp_smooth_4$epoch >= onset_epoch & hyp_smooth_4$epoch <= offset_epoch, ]
-hyp_sleep_period <- new_hypnogram(hyp_sleep_period)
+hyp_sleep_period <- window_hypnogram(hyp_smooth_4, from_epoch = onset_epoch, to_epoch = offset_epoch)
 
 cyc_aasm_sleep_period <- compute_cycles(hyp_sleep_period, method = "aasm")
 nrow(cyc_aasm_sleep_period)

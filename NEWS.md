@@ -1,5 +1,18 @@
 ## hypnoR (development version)
 
+* Added `window_hypnogram()`: restricts a hypnogram to a time (`lights_off`/
+  `lights_on`) or epoch (`from_epoch`/`to_epoch`) window, correctly
+  preserving `epoch_sec` and `resolution` on the result rather than
+  re-detecting them from the (possibly much smaller) subset. This is the
+  single place windowing logic lives -- `compute_cycles()` and
+  `compute_transitions()` have no `lights_off`/`lights_on` arguments of
+  their own; window first, then pass the windowed hypnogram in.
+* **Behaviour change:** `compute_sleep_architecture()`'s `lights_off`/
+  `lights_on` arguments now restrict *every* metric via
+  `window_hypnogram()`, not just `TIB`/`SE` as before -- previously `TST`,
+  `SOL`, `WASO`, and stage percentages were computed over the entire
+  hypnogram regardless of the window, which was inconsistent. Requires
+  `hypnogram` to carry real timestamps; errors if `time` is entirely `NA`.
 * **Bugfix:** `compute_cycles()`'s `start_epoch`/`end_epoch` columns were
   reporting row position within `hypnogram`, not the actual values in
   `hypnogram$epoch` -- identical whenever `epoch` runs `1:n` (true of every

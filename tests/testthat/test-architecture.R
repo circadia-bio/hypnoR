@@ -14,6 +14,22 @@ make_aasm_hyp <- function() {
   new_hypnogram(tibble::tibble(epoch = seq_along(stage), stage = stage))
 }
 
+# Same stage sequence as make_aasm_hyp(), but with real timestamps -- needed
+# for the lights_off/lights_on tests, since window_hypnogram() requires
+# non-NA time data.
+make_aasm_hyp_with_time <- function(start_time) {
+  stage <- c(
+    "W", "W", "N1", "N2", "N2", "N3", "N3", "N2", "REM", "REM",
+    "W", "N2", "N2", "REM", "REM", "REM", "N2", "W", "W", "W"
+  )
+  tbl <- tibble::tibble(
+    epoch = seq_along(stage),
+    time  = start_time + (seq_along(stage) - 1) * 30,
+    stage = stage
+  )
+  new_hypnogram(tbl)
+}
+
 # 8 epochs @ 30 s. Sleep onset at epoch 3, no WASO, no trailing latency stages.
 make_coarse_hyp <- function() {
   stage <- c("W", "W", "Sleep", "Sleep", "Quiet sleep", "Sleep", "W", "W")
@@ -65,15 +81,40 @@ test_that("compute_sleep_architecture() computes correct metrics for a coarse hy
 
 # ── Lights off/on ─────────────────────────────────────────────────────────────
 
-test_that("compute_sleep_architecture() uses lights_off/lights_on for TIB and SE when supplied", {
-  hyp <- make_aasm_hyp()
+test_that("compute_sleep_architecture() restricts every metric, not just TIB/SE, to the lights_off/lights_on window", {
   lights_off <- as.POSIXct("2024-01-01 22:00:00", tz = "UTC")
-  lights_on  <- lights_off + 20 * 60  # 20 minutes later
+  hyp        <- make_aasm_hyp_with_time(lights_off)
 
-  arch <- compute_sleep_architecture(hyp, lights_off = lights_off, lights_on = lights_on)
+  # Window covers the entire 20-epoch (10 min) recording -> same as unwindowed
+  arch_wide <- compute_sleep_architecture(hyp, lights_off = lights_off, lights_on = lights_off + 20 * 60)
+  expect_equal(arch_wide$tib_min, 20)
+  expect_equal(arch_wide$tst_min, 7)
+  expect_equal(arch_wide$se_pct, 7 / 20 * 100)
 
-  expect_equal(arch$tib_min, 20)
-  expect_equal(arch$se_pct, 7 / 20 * 100)
+  # Narrow window covering only the first 6 epochs (W,W,N1,N2,N2,N3) --
+  # TST/SOL must now reflect ONLY this window, not the full recording. Under
+  # the OLD behaviour this would still have returned tst_min = 7 (computed
+  # over the whole hypnogram), with only tib_min/se_pct affected by the window.
+  arch_narrow <- compute_sleep_architecture(
+    hyp,
+    lights_off = lights_off,
+    lights_on  = lights_off + 5 * 30  # inclusive of epoch 6's exact timestamp
+  )
+  expect_equal(arch_narrow$tib_min, 2.5)
+  expect_equal(arch_narrow$tst_min, 2)   # N1,N2,N2,N3 = 4 epochs * 0.5 min
+  expect_equal(arch_narrow$sol_min, 1)   # onset still at epoch 3, within the window
+})
+
+test_that("compute_sleep_architecture() errors when lights_off/lights_on are supplied but hypnogram has no time data", {
+  hyp <- make_aasm_hyp()  # no time column populated
+  expect_error(
+    compute_sleep_architecture(
+      hyp,
+      lights_off = as.POSIXct("2024-01-01 22:00:00", tz = "UTC"),
+      lights_on  = as.POSIXct("2024-01-01 22:20:00", tz = "UTC")
+    ),
+    "time"
+  )
 })
 
 test_that("compute_sleep_architecture() warns and ignores lights_off/on if only one is supplied", {
