@@ -1,20 +1,23 @@
 #' Plot a hypnogram
 #'
-#' Renders a classic stage-over-time hypnogram using `ggplot2` and
-#' `theme_circadia()`.  Accepts both full AASM and coarse staging; the
-#' y-axis order and colour mapping are set automatically from the staging
-#' resolution detected in `hypnogram`.
+#' Renders a classic stage-over-time hypnogram using `ggplot2` and a
+#' Circadia Lab colour palette. Accepts both full AASM and coarse staging;
+#' the y-axis order (deepest sleep at the bottom, Wake at the top) and
+#' colour mapping are set automatically from the staging levels present in
+#' `hypnogram`.
 #'
-#' @param hypnogram A tibble returned by [read_hypnogram()].
-#' @param epoch_sec Epoch duration in seconds, used to construct the
-#'   time axis.  Default `30`.
-#' @param colours Named character vector mapping stage labels to hex colours.
-#'   Defaults to a built-in palette drawn from the Circadia Lab colours;
-#'   automatically upgraded to the full `circadia` palette if that package
-#'   is installed.  Pass your own named vector to override.
-#' @param show_cycles If `TRUE` and cycle information is available (a `cycle`
-#'   column is present in `hypnogram`), cycle boundaries are overlaid as
-#'   vertical dashed lines.  Default `FALSE`.
+#' @param hypnogram A `hypnor_hypnogram` object as returned by
+#'   [new_hypnogram()] or [read_hypnogram()], or any data frame with at
+#'   minimum `epoch` and `stage` columns -- it will be passed through
+#'   [new_hypnogram()] automatically if not already a `hypnor_hypnogram`.
+#'   Epoch duration is read from the object's `epoch_sec` attribute; the
+#'   x-axis is elapsed hours since the first epoch (not clock time, since
+#'   `time` may be unavailable for coarse/synthetic hypnograms).
+#' @param cycles Optional: the tibble returned by [compute_cycles()]. When
+#'   supplied, a dashed vertical line is drawn at the start of each cycle.
+#' @param colours Named character vector mapping stage labels to hex
+#'   colours. Defaults to a built-in palette drawn from the Circadia Lab
+#'   colours. Pass your own named vector to override.
 #' @param title Optional plot title.
 #'
 #' @return A `ggplot` object.
@@ -24,26 +27,56 @@
 #' \dontrun{
 #' hyp <- read_hypnogram("night_001.csv")
 #' plot_hypnogram(hyp)
+#' plot_hypnogram(hyp, cycles = compute_cycles(hyp))
 #' }
 plot_hypnogram <- function(hypnogram,
-                           epoch_sec   = 30L,
-                           colours     = NULL,
-                           show_cycles = FALSE,
-                           title       = NULL) {
-  cli::cli_abort("plot_hypnogram() is not yet implemented.")
+                           cycles  = NULL,
+                           colours = NULL,
+                           title   = NULL) {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    cli::cli_abort("Package {.pkg ggplot2} is required for {.fn plot_hypnogram}.")
+  }
+  if (!inherits(hypnogram, "hypnor_hypnogram")) {
+    hypnogram <- new_hypnogram(hypnogram)
+  }
+
+  epoch_sec <- attr(hypnogram, "epoch_sec") %||% 30
+  colours   <- colours %||% .hypno_stage_colours()
+
+  df       <- hypnogram
+  df$hours <- (df$epoch - df$epoch[1L]) * epoch_sec / 3600
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = hours, y = stage, group = 1)) +
+    ggplot2::geom_step(colour = "grey40", linewidth = 0.4) +
+    ggplot2::geom_point(ggplot2::aes(colour = stage), size = 1.2, show.legend = FALSE) +
+    ggplot2::scale_colour_manual(values = colours, drop = TRUE) +
+    ggplot2::labs(x = "Time (hours)", y = NULL, title = title) +
+    .hypno_theme()
+
+  if (!is.null(cycles) && nrow(cycles) > 0L) {
+    boundary_hours <- (cycles$start_epoch - df$epoch[1L]) * epoch_sec / 3600
+    p <- p + ggplot2::geom_vline(
+      xintercept = boundary_hours,
+      linetype   = "dashed",
+      colour     = "grey60"
+    )
+  }
+
+  p
 }
 
 
 #' Plot sleep architecture as a bar chart
 #'
 #' Renders stage durations or percentages as a horizontal bar chart using
-#' `ggplot2` and `theme_circadia()`.
+#' `ggplot2` and a Circadia Lab colour palette.
 #'
-#' @param architecture A one-row tibble returned by
-#'   [compute_sleep_architecture()], or a multi-row tibble for comparing
-#'   multiple nights (requires a `night` or `id` grouping column).
+#' @param architecture A tibble returned by [compute_sleep_architecture()]
+#'   -- either a single row, or multiple rows for comparing several nights,
+#'   in which case a `night` or `id` column (if present) is used to facet
+#'   the plot into one panel per night.
 #' @param metric `"duration"` (minutes, default) or `"percentage"` of TST.
-#' @param colours Named character vector of stage colours.  See
+#' @param colours Named character vector of stage colours. See
 #'   [plot_hypnogram()] for defaults.
 #' @param title Optional plot title.
 #'
@@ -55,26 +88,87 @@ plot_hypnogram <- function(hypnogram,
 #' hyp  <- read_hypnogram("night_001.csv")
 #' arch <- compute_sleep_architecture(hyp)
 #' plot_architecture(arch)
+#' plot_architecture(arch, metric = "percentage")
 #' }
 plot_architecture <- function(architecture,
-                              metric  = "duration",
+                              metric  = c("duration", "percentage"),
                               colours = NULL,
                               title   = NULL) {
-  cli::cli_abort("plot_architecture() is not yet implemented.")
+  metric <- match.arg(metric)
+
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    cli::cli_abort("Package {.pkg ggplot2} is required for {.fn plot_architecture}.")
+  }
+
+  required <- c("tst_min", "pct_n1", "pct_n2", "pct_n3", "pct_rem",
+               "pct_sleep", "pct_quiet_sleep")
+  missing  <- setdiff(required, names(architecture))
+  if (length(missing) > 0L) {
+    cli::cli_abort(c(
+      "{.arg architecture} is missing expected column(s): {.val {missing}}.",
+      "i" = "Did it come from {.fn compute_sleep_architecture}?"
+    ))
+  }
+
+  aasm <- !all(is.na(architecture$pct_n1))
+  if (aasm) {
+    stage_labels <- c("N1", "N2", "N3", "REM")
+    pct_cols     <- c("pct_n1", "pct_n2", "pct_n3", "pct_rem")
+  } else {
+    stage_labels <- c("Sleep", "Quiet sleep")
+    pct_cols     <- c("pct_sleep", "pct_quiet_sleep")
+  }
+
+  group_col <- intersect(c("night", "id"), names(architecture))
+  group_col <- if (length(group_col) > 0L) group_col[1L] else NULL
+
+  n_rows    <- nrow(architecture)
+  long_list <- vector("list", n_rows)
+  for (i in seq_len(n_rows)) {
+    pct    <- as.numeric(architecture[i, pct_cols])
+    row_df <- data.frame(
+      stage        = factor(stage_labels, levels = rev(stage_labels)),
+      pct          = pct,
+      duration_min = pct / 100 * architecture$tst_min[i]
+    )
+    if (!is.null(group_col)) {
+      row_df[[group_col]] <- architecture[[group_col]][i]
+    }
+    long_list[[i]] <- row_df
+  }
+  long <- do.call(rbind, long_list)
+
+  long$value <- if (metric == "duration") long$duration_min else long$pct
+  ylab       <- if (metric == "duration") "Duration (minutes)" else "Percentage of TST"
+
+  p <- ggplot2::ggplot(long, ggplot2::aes(x = stage, y = value, fill = stage)) +
+    ggplot2::geom_col()
+
+  if (!is.null(group_col)) {
+    p <- p + ggplot2::facet_wrap(stats::as.formula(paste("~", group_col)))
+  }
+
+  p <- p +
+    ggplot2::coord_flip() +
+    ggplot2::scale_fill_manual(values = colours %||% .hypno_stage_colours(), guide = "none") +
+    ggplot2::labs(x = NULL, y = ylab, title = title) +
+    .hypno_theme()
+
+  p
 }
 
 
 #' Plot a stage-transition heatmap
 #'
 #' Renders the transition probability (or count) matrix returned by
-#' [compute_transitions()] as a heatmap using `ggplot2` and
-#' `theme_circadia()`.
+#' [compute_transitions()] as a heatmap using `ggplot2`.
 #'
 #' @param transitions The `matrix` element of the list returned by
-#'   [compute_transitions()].
+#'   [compute_transitions()]: a tibble with a `from` column plus one
+#'   numeric column per *to* stage.
 #' @param label_values If `TRUE` (default), cell values are printed inside
-#'   each tile.
-#' @param digits Number of decimal places for cell labels.  Default `2`.
+#'   each tile. `NA` cells (unvisited from-stages) are left blank.
+#' @param digits Number of decimal places for cell labels. Default `2`.
 #' @param title Optional plot title.
 #'
 #' @return A `ggplot` object.
@@ -90,5 +184,46 @@ plot_transition_matrix <- function(transitions,
                                    label_values = TRUE,
                                    digits       = 2L,
                                    title        = NULL) {
-  cli::cli_abort("plot_transition_matrix() is not yet implemented.")
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    cli::cli_abort("Package {.pkg ggplot2} is required for {.fn plot_transition_matrix}.")
+  }
+  if (!is.data.frame(transitions) || !"from" %in% names(transitions)) {
+    cli::cli_abort(
+      "{.arg transitions} must be the {.field matrix} element returned by {.fn compute_transitions}."
+    )
+  }
+
+  stage_levels <- setdiff(names(transitions), "from")
+  n_from       <- nrow(transitions)
+  n_to         <- length(stage_levels)
+
+  long <- data.frame(
+    from  = rep(transitions$from, times = n_to),
+    to    = rep(stage_levels, each = n_from),
+    value = unlist(transitions[stage_levels], use.names = FALSE)
+  )
+  long$from <- factor(long$from, levels = rev(transitions$from))
+  long$to   <- factor(long$to, levels = stage_levels)
+
+  p <- ggplot2::ggplot(long, ggplot2::aes(x = to, y = from, fill = value)) +
+    ggplot2::geom_tile(colour = "white") +
+    ggplot2::scale_fill_gradient(
+      low      = "#FFF7C5",
+      high     = "#4F252E",
+      na.value = "grey90"
+    ) +
+    ggplot2::labs(x = "To", y = "From", title = title, fill = NULL) +
+    .hypno_theme()
+
+  if (isTRUE(label_values)) {
+    p <- p + ggplot2::geom_text(
+      ggplot2::aes(label = ifelse(
+        is.na(value), "", formatC(value, digits = digits, format = "f")
+      )),
+      colour = "black",
+      size   = 3
+    )
+  }
+
+  p
 }

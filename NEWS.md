@@ -1,5 +1,12 @@
 ## hypnoR (development version)
 
+* Implemented `plot_hypnogram()`, `plot_architecture()`, and
+  `plot_transition_matrix()`. All three use a runtime `ggplot2` check
+  rather than a hard dependency (consistent with the rest of the
+  ecosystem) and share the built-in Circadia Lab stage colour palette.
+  `plot_hypnogram()` takes an optional `cycles` argument (the tibble from
+  `compute_cycles()`) to overlay cycle-boundary lines; `plot_architecture()`
+  facets on a `night`/`id` column when present, for comparing nights.
 * Implemented `compute_cycles()`: NREM/REM cycle segmentation for full AASM
   hypnograms, with two selectable algorithms. `method = "feinberg_floyd"`
   (default) treats any maximal contiguous REM run of at least

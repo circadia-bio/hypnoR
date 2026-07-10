@@ -1,3 +1,10 @@
+# ── ggplot2 NSE column names ──────────────────────────────────────────────────
+# Referenced via bare names inside aes() in R/plot.R; declared here (rather
+# than via the rlang .data pronoun) so ggplot2 stays a Suggests-only runtime
+# check instead of a hard dependency, per the same reasoning as .hypno_theme().
+#' @importFrom utils globalVariables
+utils::globalVariables(c("hours", "stage", "value", "to", "from"))
+
 # Internal utilities for hypnoR
 # Not exported.
 
