@@ -165,3 +165,7 @@ ggplot2::ggsave("dev/sc4001_architecture_pct.png", p3, width = 6, height = 4, dp
 p4 <- plot_transition_matrix(trans$matrix)
 print(p4)
 ggplot2::ggsave("dev/sc4001_transition_matrix.png", p4, width = 6, height = 5, dpi = 150)
+
+p5 <- plot_hypnogram(hyp_smooth_4, style = "capsule")
+print(p5)
+ggplot2::ggsave("dev/sc4001_hypnogram_capsule.png", p5, width = 12, height = 4, dpi = 150)

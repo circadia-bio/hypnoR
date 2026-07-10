@@ -88,6 +88,69 @@ test_that("plot_hypnogram() cycle boundaries align correctly on a clock-time x-a
   expect_s3_class(vline_layer$geom, "GeomVline")
 })
 
+# ── plot_hypnogram(style = "capsule") ─────────────────────────────────────────────
+
+.geom_layer_data <- function(p, geom_class) {
+  idx <- which(vapply(p$layers, function(l) inherits(l$geom, geom_class), logical(1)))
+  if (length(idx) == 0L) return(NULL)
+  ggplot2::layer_data(p, idx[1L])
+}
+
+test_that("plot_hypnogram(style = 'capsule') returns a ggplot object for AASM and coarse hypnograms", {
+  p1 <- plot_hypnogram(make_aasm_hyp(), style = "capsule")
+  p2 <- plot_hypnogram(make_coarse_hyp(), style = "capsule")
+
+  expect_s3_class(p1, "ggplot")
+  expect_s3_class(p2, "ggplot")
+})
+
+test_that("plot_hypnogram(style = 'capsule') draws one polygon group per contiguous stage run", {
+  # stage: W,W,N1,N2,N3,N2,REM,REM,N2,W -> 8 runs (rle collapses the two W's
+  # at the start and the two REM's into single runs)
+  p <- plot_hypnogram(make_aasm_hyp(), style = "capsule")
+  poly_data <- .geom_layer_data(p, "GeomPolygon")
+
+  expect_false(is.null(poly_data))
+  expect_equal(length(unique(poly_data$group)), 8)
+})
+
+test_that("plot_hypnogram(style = 'capsule') keeps each pill's polygon within its own epoch span", {
+  hyp <- make_aasm_hyp()  # 30s epochs, no time column -> hours axis
+  p   <- plot_hypnogram(hyp, style = "capsule", corner_min = 60)  # deliberately oversized corner_min
+  poly_data <- .geom_layer_data(p, "GeomPolygon")
+
+  # Run 1 is epochs 1-2 (W,W): expected span is hours 0 to 2*30/3600
+  run1 <- poly_data[poly_data$group == poly_data$group[1L], ]
+  expect_true(all(run1$x >= -1e-9))
+  expect_true(all(run1$x <= 2 * 30 / 3600 + 1e-9))
+})
+
+test_that("plot_hypnogram(style = 'capsule') uses stage labels as y-axis breaks in AASM lane order", {
+  p <- plot_hypnogram(make_aasm_hyp(), style = "capsule")
+  y_scale <- p$scales$get_scales("y")
+
+  expect_equal(y_scale$get_labels(), c("N3", "N2", "N1", "REM", "W"))
+})
+
+test_that("plot_hypnogram(style = 'capsule') overlays cycle boundaries when cycles is supplied", {
+  hyp <- make_aasm_hyp()
+  cyc <- compute_cycles(hyp, min_rem_epochs = 2)
+
+  p_no_cycles   <- plot_hypnogram(hyp, style = "capsule")
+  p_with_cycles <- plot_hypnogram(hyp, style = "capsule", cycles = cyc)
+
+  expect_gt(length(p_with_cycles$layers), length(p_no_cycles$layers))
+})
+
+test_that("plot_hypnogram(style = 'capsule') respects x_axis modes", {
+  hyp <- make_aasm_hyp_with_time()
+  p_time  <- plot_hypnogram(hyp, style = "capsule", x_axis = "time")
+  p_hours <- plot_hypnogram(hyp, style = "capsule", x_axis = "hours")
+
+  expect_equal(p_time$labels$x, "Time")
+  expect_equal(p_hours$labels$x, "Time (hours)")
+})
+
 # ── plot_architecture() ───────────────────────────────────────────────────────
 
 test_that("plot_architecture() works for AASM and coarse architecture tibbles", {

@@ -6,11 +6,13 @@
 \usage{
 plot_hypnogram(
   hypnogram,
+  style = c("step", "capsule"),
   x_axis = c("auto", "time", "hours"),
   date_breaks = "2 hours",
   cycles = NULL,
   colours = NULL,
-  title = NULL
+  title = NULL,
+  corner_min = 9
 )
 }
 \arguments{
@@ -19,6 +21,15 @@ plot_hypnogram(
 minimum \code{epoch} and \code{stage} columns -- it will be passed through
 \code{\link[=new_hypnogram]{new_hypnogram()}} automatically if not already a \code{hypnor_hypnogram}.
 Epoch duration is read from the object's \code{epoch_sec} attribute.}
+
+\item{style}{\code{"step"} (default) or \code{"capsule"}:
+\describe{
+\item{\code{"step"}}{Classic clinical step-plot: one line tracing the
+stage at every epoch.}
+\item{\code{"capsule"}}{Rounded-pill bars per contiguous stage run, one
+lane per stage, with a vertical colour-gradient line connecting
+consecutive runs across lanes at each transition.}
+}}
 
 \item{x_axis}{\code{"auto"} (default), \code{"time"}, or \code{"hours"}:
 \describe{
@@ -43,16 +54,21 @@ colours. Defaults to a built-in palette drawn from the Circadia Lab
 colours. Pass your own named vector to override.}
 
 \item{title}{Optional plot title.}
+
+\item{corner_min}{Only used by \code{style = "capsule"}. Maximum pill corner
+radius, in minutes. Runs shorter than \code{2 * corner_min} get a
+proportionally smaller radius (so very brief runs render as fully
+rounded capsule/stadium shapes rather than having oversized corners),
+longer runs are capped at this radius. Default \code{9}.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Renders a classic stage-over-time hypnogram using \code{ggplot2} and a
-Circadia Lab colour palette. Accepts both full AASM and coarse staging;
-the y-axis order (deepest sleep at the bottom, Wake at the top) and
-colour mapping are set automatically from the staging levels present in
-\code{hypnogram}.
+Renders a hypnogram using \code{ggplot2} and the Circadia Lab colour palette.
+Accepts both full AASM and coarse staging; the lane order (deepest sleep
+at the bottom, Wake at the top) and colour mapping are set automatically
+from the staging levels present in \code{hypnogram}.
 }
 \examples{
 \dontrun{
@@ -60,5 +76,6 @@ hyp <- read_hypnogram("night_001.csv")
 plot_hypnogram(hyp)
 plot_hypnogram(hyp, cycles = compute_cycles(hyp))
 plot_hypnogram(hyp, x_axis = "hours")
+plot_hypnogram(hyp, style = "capsule")
 }
 }

@@ -1,16 +1,22 @@
 #' Plot a hypnogram
 #'
-#' Renders a classic stage-over-time hypnogram using `ggplot2` and a
-#' Circadia Lab colour palette. Accepts both full AASM and coarse staging;
-#' the y-axis order (deepest sleep at the bottom, Wake at the top) and
-#' colour mapping are set automatically from the staging levels present in
-#' `hypnogram`.
+#' Renders a hypnogram using `ggplot2` and the Circadia Lab colour palette.
+#' Accepts both full AASM and coarse staging; the lane order (deepest sleep
+#' at the bottom, Wake at the top) and colour mapping are set automatically
+#' from the staging levels present in `hypnogram`.
 #'
 #' @param hypnogram A `hypnor_hypnogram` object as returned by
 #'   [new_hypnogram()] or [read_hypnogram()], or any data frame with at
 #'   minimum `epoch` and `stage` columns -- it will be passed through
 #'   [new_hypnogram()] automatically if not already a `hypnor_hypnogram`.
 #'   Epoch duration is read from the object's `epoch_sec` attribute.
+#' @param style `"step"` (default) or `"capsule"`:
+#'   \describe{
+#'     \item{`"step"`}{Classic clinical step-plot: one line tracing the
+#'       stage at every epoch.}
+#'     \item{`"capsule"`}{Rounded-pill bars per contiguous stage run, one
+#'       lane per stage.}
+#'   }
 #' @param x_axis `"auto"` (default), `"time"`, or `"hours"`:
 #'   \describe{
 #'     \item{`"auto"`}{Uses actual clock time (from the `time` column) if
@@ -30,6 +36,11 @@
 #'   colours. Defaults to a built-in palette drawn from the Circadia Lab
 #'   colours. Pass your own named vector to override.
 #' @param title Optional plot title.
+#' @param corner_min Only used by `style = "capsule"`. Maximum pill corner
+#'   radius, in minutes. Runs shorter than `2 * corner_min` get a
+#'   proportionally smaller radius (so very brief runs render as fully
+#'   rounded capsule/stadium shapes rather than having oversized corners),
+#'   longer runs are capped at this radius. Default `9`.
 #'
 #' @return A `ggplot` object.
 #'
@@ -40,13 +51,17 @@
 #' plot_hypnogram(hyp)
 #' plot_hypnogram(hyp, cycles = compute_cycles(hyp))
 #' plot_hypnogram(hyp, x_axis = "hours")
+#' plot_hypnogram(hyp, style = "capsule")
 #' }
 plot_hypnogram <- function(hypnogram,
+                           style        = c("step", "capsule"),
                            x_axis       = c("auto", "time", "hours"),
                            date_breaks = "2 hours",
                            cycles       = NULL,
                            colours      = NULL,
-                           title        = NULL) {
+                           title        = NULL,
+                           corner_min   = 9) {
+  style  <- match.arg(style)
   x_axis <- match.arg(x_axis)
 
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
@@ -68,6 +83,15 @@ plot_hypnogram <- function(hypnogram,
   }
   use_time <- has_time && x_axis != "hours"
 
+  if (style == "step") {
+    .plot_hypnogram_step(hypnogram, use_time, date_breaks, cycles, colours, title)
+  } else {
+    .plot_hypnogram_capsule(hypnogram, use_time, date_breaks, cycles, colours, title, corner_min)
+  }
+}
+
+#' @noRd
+.plot_hypnogram_step <- function(hypnogram, use_time, date_breaks, cycles, colours, title) {
   epoch_sec <- attr(hypnogram, "epoch_sec") %||% 30
   colours   <- colours %||% .hypno_stage_colours()
 
@@ -102,6 +126,105 @@ plot_hypnogram <- function(hypnogram,
       xintercept = boundary_x,
       linetype   = "dashed",
       colour     = "grey60"
+    )
+  }
+
+  p
+}
+
+#' @noRd
+.plot_hypnogram_capsule <- function(hypnogram, use_time, date_breaks, cycles, colours, title, corner_min) {
+  epoch_sec <- attr(hypnogram, "epoch_sec") %||% 30
+  colours   <- colours %||% .hypno_stage_colours()
+
+  lane_levels <- levels(hypnogram$stage)  # already bottom-to-top per new_hypnogram()
+  n_lanes     <- length(lane_levels)
+  pill_half   <- 0.3  # pill height = 0.6 lane-units, leaving a 0.4-unit gap for separators
+
+  stage_chr  <- as.character(hypnogram$stage)
+  rl         <- rle(stage_chr)
+  ends_pos   <- cumsum(rl$lengths)
+  starts_pos <- ends_pos - rl$lengths + 1L
+  n_runs     <- length(rl$lengths)
+
+  epoch_start <- hypnogram$epoch[starts_pos]
+  epoch_end   <- hypnogram$epoch[ends_pos]
+
+  if (use_time) {
+    x0 <- hypnogram$time[starts_pos]
+    x1 <- hypnogram$time[ends_pos] + epoch_sec
+    corner_x_unit <- corner_min * 60  # minutes -> seconds
+  } else {
+    e0 <- hypnogram$epoch[1L]
+    x0 <- (epoch_start - e0) * epoch_sec / 3600
+    x1 <- (epoch_end   - e0 + 1L) * epoch_sec / 3600
+    corner_x_unit <- corner_min / 60  # minutes -> hours
+  }
+
+  lane_y <- match(rl$values, lane_levels)
+  y0 <- lane_y - pill_half
+  y1 <- lane_y + pill_half
+
+  poly_list <- vector("list", n_runs)
+  for (i in seq_len(n_runs)) {
+    width_units <- if (use_time) {
+      as.numeric(difftime(x1[i], x0[i], units = "secs"))
+    } else {
+      x1[i] - x0[i]
+    }
+    rx  <- min(width_units / 2, corner_x_unit)
+    ry  <- pill_half * 0.5
+    ply <- .rounded_bar_polygon(x0[i], x1[i], y0[i], y1[i], rx, ry)
+    ply$run_id <- i
+    ply$stage  <- rl$values[i]
+    poly_list[[i]] <- ply
+  }
+  polys <- do.call(rbind, poly_list)
+
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_polygon(
+      data    = polys,
+      mapping = ggplot2::aes(x = x, y = y, group = run_id, fill = stage)
+    ) +
+    ggplot2::scale_fill_manual(values = colours, drop = TRUE, guide = "none") +
+    ggplot2::scale_y_continuous(
+      breaks = seq_len(n_lanes),
+      labels = lane_levels,
+      limits = c(0.5, n_lanes + 0.5),
+      expand = ggplot2::expansion(add = 0)
+    ) +
+    ggplot2::labs(y = NULL, title = title) +
+    .hypno_theme() +
+    ggplot2::theme(
+      panel.grid.major.y = ggplot2::element_blank(),
+      panel.grid.minor   = ggplot2::element_blank(),
+      panel.grid.major.x = ggplot2::element_line(colour = "grey85", linetype = "dashed"),
+      axis.line.y        = ggplot2::element_blank()
+    )
+
+  if (n_lanes > 1L) {
+    for (i in seq_len(n_lanes - 1L)) {
+      p <- p + ggplot2::geom_hline(yintercept = i + 0.5, colour = "grey85", linewidth = 0.4)
+    }
+  }
+
+  if (use_time) {
+    p <- p + ggplot2::scale_x_datetime(date_breaks = date_breaks, date_labels = "%H:%M") +
+      ggplot2::labs(x = "Time")
+  } else {
+    p <- p + ggplot2::labs(x = "Time (hours)")
+  }
+
+  if (!is.null(cycles) && nrow(cycles) > 0L) {
+    if (use_time) {
+      boundary_cx <- hypnogram$time[match(cycles$start_epoch, hypnogram$epoch)]
+    } else {
+      boundary_cx <- (cycles$start_epoch - hypnogram$epoch[1L]) * epoch_sec / 3600
+    }
+    p <- p + ggplot2::geom_vline(
+      xintercept = boundary_cx,
+      linetype   = "dashed",
+      colour     = "grey50"
     )
   }
 

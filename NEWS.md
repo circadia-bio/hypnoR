@@ -1,5 +1,12 @@
 ## hypnoR (development version)
 
+* `plot_hypnogram()` gains a `style` argument: `"step"` (default, unchanged)
+  or `"capsule"` -- rounded-pill bars per contiguous stage run, one lane
+  per stage (loosely modelled on the Apple Watch sleep chart's visual
+  language, with the Circadia Lab palette and full AASM lane ordering
+  rather than Apple's coarse 4-stage scheme). ggplot2 has no native
+  rounded-rect geom, so pills are hand-traced polygons (corner radius
+  scales with each bar's own width, via the new `corner_min` argument).
 * Added `window_hypnogram()`: restricts a hypnogram to a time (`lights_off`/
   `lights_on`) or epoch (`from_epoch`/`to_epoch`) window, correctly
   preserving `epoch_sec` and `resolution` on the result rather than

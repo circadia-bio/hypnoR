@@ -3,7 +3,7 @@
 # than via the rlang .data pronoun) so ggplot2 stays a Suggests-only runtime
 # check instead of a hard dependency, per the same reasoning as .hypno_theme().
 #' @importFrom utils globalVariables
-utils::globalVariables(c("x", "stage", "value", "to", "from"))
+utils::globalVariables(c("x", "y", "stage", "value", "to", "from", "run_id"))
 
 # Internal utilities for hypnoR
 # Not exported.
@@ -71,6 +71,42 @@ utils::globalVariables(c("x", "stage", "value", "to", "from"))
 #' @noRd
 .epochs_to_min <- function(n, epoch_sec) n * epoch_sec / 60
 
+# ── Capsule-style hypnogram plotting helpers ─────────────────────────────────
+
+#' Trace a rounded-rectangle polygon
+#'
+#' ggplot2 has no native rounded-rect geom, so pills are drawn as hand-traced
+#' polygons: four quarter-arcs joined by the rect's straight edges (which
+#' geom_polygon supplies automatically between consecutive arc endpoints).
+#' Works with either plain numeric or POSIXct x0/x1 -- POSIXct + numeric
+#' offsets remain POSIXct, so the same code path handles both the "hours"
+#' and "time" x-axis modes in plot_hypnogram(style = "capsule").
+#'
+#' @param x0,x1 Left/right edges (numeric hours, or POSIXct).
+#' @param y0,y1 Bottom/top edges (numeric, lane units).
+#' @param rx Corner radius in x-units (already clamped to half-width by the
+#'   caller).
+#' @param ry Corner radius in y-units.
+#' @param n_arc Points per quarter-arc. Default `8`.
+#' @return A data frame with columns `x`, `y` tracing the polygon boundary.
+#' @noRd
+.rounded_bar_polygon <- function(x0, x1, y0, y1, rx, ry, n_arc = 8L) {
+  rx <- max(as.numeric(rx), 1e-9)
+  ry <- max(ry, 1e-9)
+
+  arc <- function(cx, cy, theta0, theta1) {
+    theta <- seq(theta0, theta1, length.out = n_arc)
+    data.frame(x = cx + rx * cos(theta), y = cy + ry * sin(theta))
+  }
+
+  bl <- arc(x0 + rx, y0 + ry, pi,          3 * pi / 2)
+  br <- arc(x1 - rx, y0 + ry, 3 * pi / 2,  2 * pi)
+  tr <- arc(x1 - rx, y1 - ry, 0,           pi / 2)
+  tl <- arc(x0 + rx, y1 - ry, pi / 2,      pi)
+
+  rbind(bl, br, tr, tl)
+}
+
 # ── Circadia visual integration ───────────────────────────────────────────────
 
 # circadia is intentionally NOT listed in DESCRIPTION: it lives only on GitHub
@@ -105,9 +141,9 @@ utils::globalVariables(c("x", "stage", "value", "to", "from"))
 #' @noRd
 .hypno_stage_colours <- function() {
   c(
-    "W"           = "#F4AE52",   # amber  — wake
-    "REM"         = "#C1EBE9",   # teal   — REM
-    "N1"          = "#FFF7C5",   # cream  — light NREM
+    "W"           = "#FFF7C5",   # cream  — wake (rotated from N1)
+    "REM"         = "#F4AE52",   # amber  — REM (rotated from wake)
+    "N1"          = "#C1EBE9",   # teal   — light NREM (rotated from REM)
     "N2"          = "#1B3A5C",   # navy   — NREM
     "N3"          = "#4F252E",   # maroon — deep NREM
     "Sleep"       = "#1B3A5C",
