@@ -1,6 +1,6 @@
 Package: hypnoR
 Title: Hypnogram Handling, Plotting, and Sleep Architecture Metrics
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
@@ -17,8 +17,8 @@ Description: Provides a staging-agnostic layer for hypnogram ingestion,
     from mrpheus and coarser actigraphy-derived hypnograms (W / Sleep /
     Quiet sleep) from zeitR; all metric functions degrade gracefully
     depending on staging resolution. Includes publication-ready plotting
-    via theme_circadia(). Designed as the hypnogram layer of the Circadia
-    Lab ecosystem, feeding into syncR::sync().
+    with a shared Circadia Lab colour palette. Designed as the hypnogram
+    layer of the Circadia Lab ecosystem, feeding into syncR::sync().
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
