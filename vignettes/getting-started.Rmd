@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
   out.width  = "100%"
 )
 has_mrpheus <- requireNamespace("mrpheus", quietly = TRUE)
+has_zeitr   <- requireNamespace("zeitR", quietly = TRUE)
 ```
 
 ```{r packages, message = FALSE}
@@ -183,6 +184,74 @@ plot_architecture(arch)
 
 ```{r plot-transitions, eval = has_mrpheus, fig.height = 4}
 plot_transition_matrix(trans$matrix)
+```
+
+## Coarse hypnograms from zeitR
+
+Everything above works identically on coarse, actigraphy-derived staging --
+that's the whole point of "staging-agnostic." **zeitR** ships a bundled
+ActTrust validation recording; running its full rest-activity pipeline and
+exporting produces a coarse (`W` / `Sleep` / `Quiet sleep`) hypnogram:
+
+```{r check-zeitr, echo = FALSE, results = "asis"}
+if (!has_zeitr) {
+  cat(
+    "_zeitR isn't installed in the environment that built this article, ",
+    "so the code below is shown but wasn't executed. Install zeitR to ",
+    "see it run._",
+    sep = ""
+  )
+}
+```
+
+```{r zeitr-pipeline, eval = has_zeitr, message = FALSE}
+result <- zeitR::run_pipeline(
+  system.file("extdata", "input1.txt", package = "zeitR"),
+  tz    = "UTC",
+  quiet = TRUE
+)
+
+zeitr_hyp <- zeitR::export_hypnogram(result)
+hyp_coarse <- new_hypnogram(zeitr_hyp)
+hyp_coarse
+```
+
+Resolution is auto-detected as `coarse` (no `N1`/`N2`/`N3`/`REM` labels
+present), and every metric function adapts automatically -- no separate
+"coarse mode" argument anywhere:
+
+```{r zeitr-architecture, eval = has_zeitr}
+arch_coarse <- compute_sleep_architecture(hyp_coarse)
+arch_coarse
+```
+
+Notice `rem_lat_min`, `sws_lat_min`, and the AASM stage percentages
+(`pct_n1`/`pct_n2`/`pct_n3`/`pct_rem`) are all `NA` -- they need finer
+staging than three states can provide -- while `pct_sleep`/`pct_quiet_sleep`
+are populated instead. `compute_transitions()` works exactly the same way,
+just over a 3x3 matrix instead of 5x5:
+
+```{r zeitr-transitions, eval = has_zeitr}
+trans_coarse <- compute_transitions(hyp_coarse)
+trans_coarse$matrix
+```
+
+`compute_cycles()` is the one function that's genuinely AASM-only -- NREM/REM
+cycle segmentation needs a REM stage to segment on, so it errors clearly
+rather than silently returning nonsense:
+
+```{r zeitr-cycles, eval = has_zeitr, error = TRUE}
+compute_cycles(hyp_coarse)
+```
+
+Plotting works identically too, with a 3-lane layout instead of 5:
+
+```{r zeitr-plot, eval = has_zeitr, fig.height = 3}
+plot_hypnogram(hyp_coarse)
+```
+
+```{r zeitr-plot-architecture, eval = has_zeitr, fig.height = 3.5}
+plot_architecture(arch_coarse)
 ```
 
 ## What isn't here yet

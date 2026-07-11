@@ -95,6 +95,17 @@
 
 ### 📚 Documentation
 
+* Extended `vignette("getting-started")` with a "Coarse hypnograms from
+  zeitR" section, running zeitR's full rest-activity pipeline on its
+  bundled ActTrust validation recording (`input1.txt`) end-to-end through
+  the same functions used for the AASM/mrpheus walkthrough -- demonstrating
+  the staging-agnostic contract concretely: `compute_sleep_architecture()`
+  returns `NA` for AASM-only fields and populates the coarse-only ones
+  instead, `compute_transitions()` works over a 3x3 matrix, and
+  `compute_cycles()` errors clearly (no REM stage to segment cycles on).
+  Guarded with `requireNamespace("zeitR")`; `zeitR` added to `Suggests`.
+  New `dev/test_zeitR_pipeline.R`, mirroring the mrpheus one.
+
 * Rewrote `vignette("getting-started")` to reflect the actual current API
   (the previous version referenced `read_hypnogram()`, which doesn't exist
   yet) and to run against a real recording -- mrpheus's bundled `SC4001E0`
