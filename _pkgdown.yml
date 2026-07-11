@@ -218,6 +218,11 @@ articles:
   contents:
   - getting-started
 
+- title: "Worked examples"
+  navbar: ~
+  contents:
+  - "`articles/mrpheus-integration`"
+
 news:
   releases:
   - text: "Changelog"
