@@ -13,6 +13,8 @@ ecosystem, feeding into syncR::sync().
 
 Useful links:
 
+- <https://hypnor.circadia-lab.uk>
+
 - <https://github.com/circadia-bio/hypnoR>
 
 - Report bugs at <https://github.com/circadia-bio/hypnoR/issues>

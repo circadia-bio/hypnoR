@@ -137,6 +137,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with hypnoR</a></li>
+    <li><a class="dropdown-item" href="../articles/mrpheus-integration.html">Cleaning up and interpreting real staging: a worked example with mrpheus</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -169,104 +170,173 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Getting started with hypnoR</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/circadia-bio/hypnoR/blob/v0.1.0/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/circadia-bio/hypnoR/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>getting-started.Rmd</code></div>
     </div>
 
     
     
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hypnor.circadia-lab.uk">hypnoR</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p><strong>hypnoR</strong> is the hypnogram layer of the Circadia Lab R
-ecosystem. It accepts staged hypnograms from two upstream sources:</p>
-<ul>
-<li>
-<strong>mrpheus</strong> — full AASM staging: <code>W</code> /
-<code>N1</code> / <code>N2</code> / <code>N3</code> /
-<code>REM</code>
-</li>
-<li>
-<strong>zeitR</strong> — coarse actigraphy-derived staging:
-<code>W</code> / <code>Sleep</code> / <code>Quiet sleep</code>
-</li>
-</ul>
-<p>All metric functions are <em>resolution-agnostic</em>: they compute
-what is possible given the available stages and document which outputs
-require full AASM staging.</p>
+ecosystem. It takes a staged hypnogram from anywhere –
+<strong>mrpheus</strong> (full AASM: <code>W</code> / <code>N1</code> /
+<code>N2</code> / <code>N3</code> / <code>REM</code>),
+<strong>zeitR</strong> (coarse actigraphy-derived: <code>W</code> /
+<code>Sleep</code> / <code>Quiet sleep</code>), or a hand-built tibble –
+and turns it into sleep architecture metrics, NREM/REM cycles,
+transition statistics, and publication-ready plots.</p>
+<p>Every metric and plotting function is
+<strong>staging-agnostic</strong>: it computes whatever is possible
+given the resolution actually present, and returns <code>NA</code>
+(documented per-function) for metrics that need finer staging than
+what’s available.</p>
+<p>This article walks through the whole pipeline using a real recording:
+mrpheus’s bundled <code>SC4001E0</code> example – a 22-hour Sleep-EDF
+cassette recording, already staged by mrpheus’s automatic sleep-staging
+model.</p>
+<p><em>mrpheus isn’t installed in the environment that built this
+article, so the code below is shown but wasn’t executed. Install mrpheus
+to see it run.</em></p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"circadia-bio/hypnoR"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="basic-workflow">Basic workflow<a class="anchor" aria-label="anchor" href="#basic-workflow"></a>
+<h2 id="from-mrpheus-to-hypnor">From mrpheus to hypnoR<a class="anchor" aria-label="anchor" href="#from-mrpheus-to-hypnor"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hypnor.circadia-lab.uk">hypnoR</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 1. Read a hypnogram</span></span>
-<span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_hypnogram.html">read_hypnogram</a></span><span class="op">(</span><span class="st">"path/to/hypnogram.csv"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 2. Compute sleep architecture metrics</span></span>
-<span><span class="va">arch</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 3. Detect NREM/REM cycles (full AASM only)</span></span>
-<span><span class="va">cyc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 4. Stage-transition analysis</span></span>
-<span><span class="va">trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_transitions.html">compute_transitions</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 5. Plot</span></span>
-<span><span class="fu"><a href="../reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_architecture.html">plot_architecture</a></span><span class="op">(</span><span class="va">arch</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_transition_matrix.html">plot_transition_matrix</a></span><span class="op">(</span><span class="va">trans</span><span class="op">$</span><span class="va">matrix</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">staging</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"SC4001E0_staging.rds"</span>, package <span class="op">=</span> <span class="st">"mrpheus"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">staging</span></span></code></pre></div>
+<p><code>staging</code> is mrpheus’s raw per-epoch output: one row per
+30-second epoch, an AASM <code>stage</code> label, and five posterior
+probabilities from the underlying LightGBM classifier.
+<code>mrpheus::export_hypnogram()</code> prepares it for hypnoR:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mrp_hyp</span> <span class="op">&lt;-</span> <span class="fu">mrpheus</span><span class="fu">::</span><span class="fu">export_hypnogram</span><span class="op">(</span></span>
+<span>  <span class="va">staging</span>,</span>
+<span>  epoch_s        <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>  start_time     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2024-01-01 16:13:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span>,</span>
+<span>  participant_id <span class="op">=</span> <span class="st">"SC4001"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>(The real recording start time comes from the EDF header at
+<code>mrpheus::read_edf()</code> time; the bundled <code>.rds</code>
+doesn’t carry it, so we use a placeholder here based on the note in
+mrpheus’s own <code>sleep-staging-demo</code> article that the cassette
+started around 16:13 local time.)</p>
+<p><code><a href="../reference/new_hypnogram.html">new_hypnogram()</a></code> – the constructor every other hypnoR
+function goes through – accepts this directly:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_hypnogram.html">new_hypnogram</a></span><span class="op">(</span><span class="va">mrp_hyp</span><span class="op">)</span></span>
+<span><span class="va">hyp</span></span></code></pre></div>
+<p>Staging resolution (<code>aasm</code> here, since <code>N1</code> /
+<code>N2</code> / <code>N3</code> / <code>REM</code> are present) and
+epoch duration are auto-detected and stored as attributes on
+<code>hyp</code> – every other hypnoR function reads them from there
+rather than asking you to repeat yourself.</p>
 </div>
 <div class="section level2">
-<h2 id="supported-input-formats">Supported input formats<a class="anchor" aria-label="anchor" href="#supported-input-formats"></a>
+<h2 id="preprocessing">Preprocessing<a class="anchor" aria-label="anchor" href="#preprocessing"></a>
 </h2>
-<p><code><a href="../reference/read_hypnogram.html">read_hypnogram()</a></code> currently handles:</p>
-<table class="table">
-<thead><tr class="header">
-<th>Format</th>
-<th>Argument</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Generic CSV (epoch, stage columns)</td>
-<td><code>"csv"</code></td>
-</tr>
-<tr class="even">
-<td>EDF+ annotations</td>
-<td><code>"edf_annotations"</code></td>
-</tr>
-<tr class="odd">
-<td>YASA output</td>
-<td><code>"yasa"</code></td>
-</tr>
-<tr class="even">
-<td>Compumedics Profusion</td>
-<td><code>"compumedics"</code></td>
-</tr>
-<tr class="odd">
-<td>Nox Medical</td>
-<td><code>"nox"</code></td>
-</tr>
-</tbody>
-</table>
-<p>Pass <code>format = "auto"</code> (the default) to infer the format
-from the file header and extension.</p>
+<p>Two optional cleanup steps happen before any metric sees the
+hypnogram.</p>
+<div class="section level3">
+<h3 id="smoothing">Smoothing<a class="anchor" aria-label="anchor" href="#smoothing"></a>
+</h3>
+<p>Automatic per-epoch staging with no temporal continuity constraint –
+as here – can produce brief, isolated stage flips that don’t reflect
+real sleep physiology (a single REM epoch nested inside an N2 run, for
+instance). <code><a href="../reference/smooth_hypnogram.html">smooth_hypnogram()</a></code> offers two label-only
+rules:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hyp_smooth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smooth_hypnogram.html">smooth_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aasm_isolated"</span>, <span class="st">"min_run"</span><span class="op">)</span>, min_run_epochs <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage</span> <span class="op">!=</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage_raw</span><span class="op">)</span></span></code></pre></div>
+<p><code>aasm_isolated</code> reassigns a single epoch flanked
+identically on both sides; <code>min_run</code> merges any run shorter
+than <code>min_run_epochs</code> into whichever flanking run is longer,
+regardless of whether the flanks agree. The original, unsmoothed labels
+are always preserved in <code>stage_raw</code> for comparison.</p>
+</div>
+<div class="section level3">
+<h3 id="windowing">Windowing<a class="anchor" aria-label="anchor" href="#windowing"></a>
+</h3>
+<p><code>SC4001</code> is a 22-hour ambulatory recording – most of it is
+ordinary daytime Wake before and after the one real sleep period.
+Running metrics over the <em>entire</em> recording would badly distort
+things like sleep onset latency and NREM/REM cycle counts, so
+<code><a href="../reference/window_hypnogram.html">window_hypnogram()</a></code> restricts a hypnogram to a time or epoch
+window before any metric sees it:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sleep_idx</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"W"</span><span class="op">)</span></span>
+<span><span class="va">onset_epoch</span>  <span class="op">&lt;-</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">epoch</span><span class="op">[</span><span class="va">sleep_idx</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">offset_epoch</span> <span class="op">&lt;-</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">epoch</span><span class="op">[</span><span class="va">sleep_idx</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sleep_idx</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">hyp_sleep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/window_hypnogram.html">window_hypnogram</a></span><span class="op">(</span><span class="va">hyp_smooth</span>, from_epoch <span class="op">=</span> <span class="va">onset_epoch</span>, to_epoch <span class="op">=</span> <span class="va">offset_epoch</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">hyp_sleep</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code> also accepts
+<code>lights_off</code>/<code>lights_on</code> directly and windows
+internally, if you’d rather pass real lights-off/on timestamps than
+derive a window from the data itself.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="staging-resolution">Staging resolution<a class="anchor" aria-label="anchor" href="#staging-resolution"></a>
+<h2 id="sleep-architecture">Sleep architecture<a class="anchor" aria-label="anchor" href="#sleep-architecture"></a>
 </h2>
-<p>hypnoR detects resolution automatically from the stage labels present
-in the hypnogram. Metrics that require full AASM staging (REM latency,
-SWS latency, cycle detection, N1/N2/N3 percentages) return
-<code>NA</code> with an informative message for coarse hypnograms.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">arch</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture</a></span><span class="op">(</span><span class="va">hyp_sleep</span><span class="op">)</span></span>
+<span><span class="va">arch</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="stage-transitions">Stage transitions<a class="anchor" aria-label="anchor" href="#stage-transitions"></a>
+</h2>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_transitions.html">compute_transitions</a></span><span class="op">(</span><span class="va">hyp_sleep</span><span class="op">)</span></span>
+<span><span class="va">trans</span><span class="op">$</span><span class="va">matrix</span></span>
+<span><span class="va">trans</span><span class="op">$</span><span class="va">fragmentation</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="nremrem-cycles">NREM/REM cycles<a class="anchor" aria-label="anchor" href="#nremrem-cycles"></a>
+</h2>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cyc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, method <span class="op">=</span> <span class="st">"aasm"</span><span class="op">)</span></span>
+<span><span class="va">cyc</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
+</h2>
+<p>Two hypnogram styles are available. <code>"step"</code> (the default)
+is the classic clinical trace:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, cycles <span class="op">=</span> <span class="va">cyc</span><span class="op">)</span></span></code></pre></div>
+<p><code>"capsule"</code> draws rounded-pill bars per contiguous stage
+run, one lane per stage:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, style <span class="op">=</span> <span class="st">"capsule"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_architecture.html">plot_architecture</a></span><span class="op">(</span><span class="va">arch</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_transition_matrix.html">plot_transition_matrix</a></span><span class="op">(</span><span class="va">trans</span><span class="op">$</span><span class="va">matrix</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="what-isnt-here-yet">What isn’t here yet<a class="anchor" aria-label="anchor" href="#what-isnt-here-yet"></a>
+</h2>
+<p><code><a href="../reference/read_hypnogram.html">read_hypnogram()</a></code> – ingesting hypnograms directly from
+CSV, EDF annotations, YASA, Compumedics, or Nox export files – is still
+under development. For now, hypnograms come from an upstream package
+(<code>mrpheus::export_hypnogram()</code>,
+<code>zeitR::export_hypnogram()</code>) or a hand-built tibble passed to
+<code><a href="../reference/new_hypnogram.html">new_hypnogram()</a></code>, as shown above.</p>
+<p>See <code>vignette("mrpheus-integration", package = "hypnoR")</code>
+(or the “Worked examples” section of the pkgdown site) for a deeper,
+warts-and-all walk through cleaning up and interpreting real automatic
+staging output.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -279,7 +349,7 @@ SWS latency, cycle detection, N1/N2/N3 percentages) return
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

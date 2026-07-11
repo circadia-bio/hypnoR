@@ -2,7 +2,7 @@
 
 Renders the transition probability (or count) matrix returned by
 [`compute_transitions()`](https://hypnor.circadia-lab.uk/reference/compute_transitions.md)
-as a heatmap using `ggplot2` and `theme_circadia()`.
+as a heatmap using `ggplot2`.
 
 ## Usage
 
@@ -20,11 +20,13 @@ plot_transition_matrix(
 - transitions:
 
   The `matrix` element of the list returned by
-  [`compute_transitions()`](https://hypnor.circadia-lab.uk/reference/compute_transitions.md).
+  [`compute_transitions()`](https://hypnor.circadia-lab.uk/reference/compute_transitions.md):
+  a tibble with a `from` column plus one numeric column per *to* stage.
 
 - label_values:
 
-  If `TRUE` (default), cell values are printed inside each tile.
+  If `TRUE` (default), cell values are printed inside each tile. `NA`
+  cells (unvisited from-stages) are left blank.
 
 - digits:
 

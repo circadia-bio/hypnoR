@@ -1,5 +1,21 @@
 # Package index
 
+## Constructors
+
+Build the hypnor_hypnogram object used by every other function.
+
+- [`new_hypnogram()`](https://hypnor.circadia-lab.uk/reference/new_hypnogram.md)
+  : Construct a hypnoR hypnogram object
+
+## Preprocessing
+
+Clean up and window a hypnogram before computing metrics.
+
+- [`smooth_hypnogram()`](https://hypnor.circadia-lab.uk/reference/smooth_hypnogram.md)
+  : Smooth a hypnogram by reassigning short, likely-spurious runs
+- [`window_hypnogram()`](https://hypnor.circadia-lab.uk/reference/window_hypnogram.md)
+  : Restrict a hypnogram to a time or epoch window
+
 ## Ingestion
 
 Read hypnograms from common file formats.

@@ -105,6 +105,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with hypnoR</a></li>
+    <li><a class="dropdown-item" href="../articles/mrpheus-integration.html">Cleaning up and interpreting real staging: a worked example with mrpheus</a></li>
   </ul></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
@@ -124,13 +125,50 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/circadia-bio/hypnoR/blob/v0.1.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/circadia-bio/hypnoR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="hypnor-development-version">hypnoR (development version)<a class="anchor" aria-label="anchor" href="#hypnor-development-version"></a></h2>
+<div class="section level3">
+<h3 id="sparkles-new-features-development-version">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-development-version"></a></h3>
+<ul><li>Added <code><a href="../reference/new_hypnogram.html">new_hypnogram()</a></code>, the constructor underlying all other hypnoR functions. Accepts either a bare tibble with <code>epoch</code>/<code>stage</code> columns (e.g. <code>zeitR::export_hypnogram()</code> output) or an <code>mrpheus_hypnogram</code> object (<code>mrpheus::export_hypnogram()</code> output), normalising both into a single <code>hypnor_hypnogram</code> representation. Staging resolution (AASM vs coarse) is auto-detected from the stage labels present.</li>
+<li>Implemented <code><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code>: TST, TIB, SE, SOL, WASO, REM/SWS latency, and stage percentages, all resolution-agnostic. Sleep onset is defined as the first non-<code>"W"</code> epoch for both AASM and coarse hypnograms. <code>epoch_sec</code> and staging resolution are read automatically from the <code>hypnor_hypnogram</code> object rather than passed as arguments.</li>
+<li>Implemented <code><a href="../reference/compute_transitions.html">compute_transitions()</a></code>: stage-to-stage transition matrix (counts or row-normalised probabilities) plus fragmentation index and wake-transition count. New <code>include_wake</code> argument controls whether Wake is included as a state in the matrix; fragmentation metrics always use the full epoch sequence regardless of this setting.</li>
+<li>Implemented <code><a href="../reference/compute_cycles.html">compute_cycles()</a></code>: NREM/REM cycle segmentation for full AASM hypnograms, with two selectable algorithms. <code>method = "feinberg_floyd"</code> (default) treats any maximal contiguous REM run of at least <code>min_rem_epochs</code> as a REM period, with no tolerance for interruption. <code>method = "aasm"</code> merges REM runs separated by a gap of at most <code>rem_gap_min</code> minutes (default 15) into a single REM period before applying the <code>min_rem_epochs</code> threshold. Errors on coarse hypnograms, which have no REM stage to segment on.</li>
+<li>Added <code><a href="../reference/smooth_hypnogram.html">smooth_hypnogram()</a></code>, a hypnogram-level cleanup step for raw unsmoothed per-epoch staging (e.g. <code>mrpheus::stage_epochs()</code>, which has no temporal continuity constraint and can produce isolated single-epoch stage flips). Two label-only rules, applicable independently or in sequence: <code>"aasm_isolated"</code> (default) reassigns a single epoch flanked identically on both sides; <code>"min_run"</code> merges any run shorter than <code>min_run_epochs</code> into whichever flanking run is longer, regardless of whether the flanks agree. The original labels are preserved in a new <code>stage_raw</code> column.</li>
+<li>Added <code><a href="../reference/window_hypnogram.html">window_hypnogram()</a></code>: restricts a hypnogram to a time (<code>lights_off</code>/ <code>lights_on</code>) or epoch (<code>from_epoch</code>/<code>to_epoch</code>) window, correctly preserving <code>epoch_sec</code> and <code>resolution</code> on the result rather than re-detecting them from the (possibly much smaller) subset. This is the single place windowing logic lives – <code><a href="../reference/compute_cycles.html">compute_cycles()</a></code> and <code><a href="../reference/compute_transitions.html">compute_transitions()</a></code> have no <code>lights_off</code>/<code>lights_on</code> arguments of their own; window first, then pass the windowed hypnogram in.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bar_chart-visualisation-development-version">📊 Visualisation<a class="anchor" aria-label="anchor" href="#bar_chart-visualisation-development-version"></a></h3>
+<ul><li>Implemented <code><a href="../reference/plot_hypnogram.html">plot_hypnogram()</a></code>, <code><a href="../reference/plot_architecture.html">plot_architecture()</a></code>, and <code><a href="../reference/plot_transition_matrix.html">plot_transition_matrix()</a></code>. All three use a runtime <code>ggplot2</code> check rather than a hard dependency (consistent with the rest of the ecosystem) and share the built-in Circadia Lab stage colour palette. <code><a href="../reference/plot_hypnogram.html">plot_hypnogram()</a></code> takes an optional <code>cycles</code> argument (the tibble from <code><a href="../reference/compute_cycles.html">compute_cycles()</a></code>) to overlay cycle-boundary lines; <code><a href="../reference/plot_architecture.html">plot_architecture()</a></code> facets on a <code>night</code>/<code>id</code> column when present, for comparing nights.</li>
+<li>
+<code><a href="../reference/plot_hypnogram.html">plot_hypnogram()</a></code> gains an <code>x_axis</code> argument (<code>"auto"</code> (default), <code>"time"</code>, or <code>"hours"</code>). When the hypnogram carries real timestamps (i.e. <code>start_time</code> was supplied to <code><a href="../reference/new_hypnogram.html">new_hypnogram()</a></code> or <code>mrpheus::export_hypnogram()</code>), the x-axis now shows actual clock time by default instead of always using elapsed hours since the first epoch.</li>
+<li>
+<code><a href="../reference/plot_hypnogram.html">plot_hypnogram()</a></code> gains a <code>style</code> argument: <code>"step"</code> (default, unchanged) or <code>"capsule"</code> – rounded-pill bars per contiguous stage run, one lane per stage, loosely modelled on the Apple Watch sleep chart’s visual language (Circadia Lab palette, full AASM lane ordering, light theme rather than Apple’s dark coarse 4-stage scheme). ggplot2 has no native rounded-rect geom, so pills are hand-traced polygons (corner radius scales with each bar’s own width, via the new <code>corner_min</code> argument).</li>
+<li>Rotated the stage colour palette: <code>N1 -&gt; Wake -&gt; REM -&gt; N1</code>. <code>W</code> is now cream (was N1’s), <code>REM</code> is now amber (was wake’s), <code>N1</code> is now teal (was REM’s); <code>N2</code>/<code>N3</code>/<code>Sleep</code>/<code>Quiet sleep</code> unchanged.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-bug-fixes-development-version">🐛 Bug fixes<a class="anchor" aria-label="anchor" href="#bug-bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/compute_cycles.html">compute_cycles()</a></code>’s <code>start_epoch</code>/<code>end_epoch</code> columns were reporting row position within <code>hypnogram</code>, not the actual values in <code>hypnogram$epoch</code> – identical whenever <code>epoch</code> runs <code>1:n</code> (true of every fixture in the test suite so far), but wrong for any hypnogram that doesn’t start at epoch 1, e.g. after subsetting a longer recording down to a sleep-period window. Durations (<code>nrem_min</code>/<code>rem_min</code>/<code>cycle_min</code>) were unaffected, since those were already computed from row-position differences rather than the epoch column.</li>
+<li>
+<strong>Behaviour change:</strong> <code><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code>’s <code>lights_off</code>/ <code>lights_on</code> arguments now restrict <em>every</em> metric via <code><a href="../reference/window_hypnogram.html">window_hypnogram()</a></code>, not just <code>TIB</code>/<code>SE</code> as before – previously <code>TST</code>, <code>SOL</code>, <code>WASO</code>, and stage percentages were computed over the entire hypnogram regardless of the window, which was inconsistent. Requires <code>hypnogram</code> to carry real timestamps; errors if <code>time</code> is entirely <code>NA</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="rocket-ci-development-version">🚀 CI<a class="anchor" aria-label="anchor" href="#rocket-ci-development-version"></a></h3>
+<ul><li>Added a <code>covr</code>-based coverage step to the <code>pkgdown.yaml</code> workflow, writing a coverage badge (<code>docs/badges/coverage.json</code>) to <code>gh-pages</code> on pushes to <code>main</code>/<code>master</code>/release (matching zeitR’s setup). <code>covr</code> added to <code>Suggests</code>; new <code>dev/check_coverage.R</code> for running coverage locally. README gains <code>R CMD CHECK</code> and <code>Coverage</code> badges.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="books-documentation-development-version">📚 Documentation<a class="anchor" aria-label="anchor" href="#books-documentation-development-version"></a></h3>
+<ul><li>Rewrote <code><a href="../articles/getting-started.html">vignette("getting-started")</a></code> to reflect the actual current API (the previous version referenced <code><a href="../reference/read_hypnogram.html">read_hypnogram()</a></code>, which doesn’t exist yet) and to run against a real recording – mrpheus’s bundled <code>SC4001E0</code> example – rather than hypothetical placeholder code.</li>
+<li>Added a second article, <code>vignette("mrpheus-integration")</code> (“Worked examples” on the pkgdown site): a warts-and-all walkthrough of diagnosing scattered raw REM calls, smoothing, windowing to the real sleep period, and comparing <code><a href="../reference/compute_cycles.html">compute_cycles()</a></code>’s two methods, using the same recording. Both vignettes are guarded with <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace("mrpheus")</a></code> so they still build (showing code, not evaluated output) in environments without mrpheus installed.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="hypnor-010-2026-06">hypnoR 0.1.0 (2026-06)<a class="anchor" aria-label="anchor" href="#hypnor-010-2026-06"></a></h2>
 <div class="section level3">
-<h3 id="initial-scaffold-0-1-0">Initial scaffold<a class="anchor" aria-label="anchor" href="#initial-scaffold-0-1-0"></a></h3>
+<h3 id="seedling-initial-scaffold-0-1-0">🌱 Initial scaffold<a class="anchor" aria-label="anchor" href="#seedling-initial-scaffold-0-1-0"></a></h3>
 <ul><li>Package skeleton: <code><a href="../reference/read_hypnogram.html">read_hypnogram()</a></code>, <code><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code>, <code><a href="../reference/compute_cycles.html">compute_cycles()</a></code>, <code><a href="../reference/compute_transitions.html">compute_transitions()</a></code>, <code><a href="../reference/plot_hypnogram.html">plot_hypnogram()</a></code>, <code><a href="../reference/plot_architecture.html">plot_architecture()</a></code>, <code><a href="../reference/plot_transition_matrix.html">plot_transition_matrix()</a></code>.</li>
 <li>Staging-agnostic design: all metric functions accept both full AASM (W / N1 / N2 / N3 / REM) and coarse actigraphy-derived (W / Sleep / Quiet sleep) hypnograms.</li>
 <li>pkgdown site with Bootstrap 5 and Circadia Lab branding.</li>
@@ -145,7 +183,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

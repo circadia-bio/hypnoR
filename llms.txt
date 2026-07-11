@@ -6,6 +6,9 @@ the staging-agnostic layer of the Circadia Lab ecosystem.**
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://hypnor.circadia-lab.uk/LICENSE)
+[![R CMD
+CHECK](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/hypnoR/gh-pages/badges/coverage.json)](https://github.com/circadia-bio/hypnoR/actions/workflows/pkgdown.yaml)
 
 ------------------------------------------------------------------------
 
@@ -158,6 +161,22 @@ Copyright © Lucas França, Mario Leocadio-Miguel, 2026
 
 # Package index
 
+## Constructors
+
+Build the hypnor_hypnogram object used by every other function.
+
+- [`new_hypnogram()`](https://hypnor.circadia-lab.uk/reference/new_hypnogram.md)
+  : Construct a hypnoR hypnogram object
+
+## Preprocessing
+
+Clean up and window a hypnogram before computing metrics.
+
+- [`smooth_hypnogram()`](https://hypnor.circadia-lab.uk/reference/smooth_hypnogram.md)
+  : Smooth a hypnogram by reassigning short, likely-spurious runs
+- [`window_hypnogram()`](https://hypnor.circadia-lab.uk/reference/window_hypnogram.md)
+  : Restrict a hypnogram to a time or epoch window
+
 ## Ingestion
 
 Read hypnograms from common file formats.
@@ -211,3 +230,14 @@ Package-level documentation.
 
 - [Getting started with
   hypnoR](https://hypnor.circadia-lab.uk/articles/getting-started.md):
+
+### Worked examples
+
+- [Cleaning up and interpreting real staging: a worked example with
+  mrpheus](https://hypnor.circadia-lab.uk/articles/mrpheus-integration.md):
+
+  A warts-and-all walkthrough of taking mrpheus’s raw automatic staging
+  output through hypnoR’s full pipeline, using the same SC4001 recording
+  as mrpheus’s own sleep-staging-demo article. Along the way: why the
+  raw hypnogram looks messier than a textbook figure, whether that’s a
+  bug, smoothing, windowing, and comparing cycle-detection methods.

@@ -1,14 +1,14 @@
 # Plot sleep architecture as a bar chart
 
 Renders stage durations or percentages as a horizontal bar chart using
-`ggplot2` and `theme_circadia()`.
+`ggplot2` and a Circadia Lab colour palette.
 
 ## Usage
 
 ``` r
 plot_architecture(
   architecture,
-  metric = "duration",
+  metric = c("duration", "percentage"),
   colours = NULL,
   title = NULL
 )
@@ -18,10 +18,11 @@ plot_architecture(
 
 - architecture:
 
-  A one-row tibble returned by
-  [`compute_sleep_architecture()`](https://hypnor.circadia-lab.uk/reference/compute_sleep_architecture.md),
-  or a multi-row tibble for comparing multiple nights (requires a
-  `night` or `id` grouping column).
+  A tibble returned by
+  [`compute_sleep_architecture()`](https://hypnor.circadia-lab.uk/reference/compute_sleep_architecture.md)
+  – either a single row, or multiple rows for comparing several nights,
+  in which case a `night` or `id` column (if present) is used to facet
+  the plot into one panel per night.
 
 - metric:
 
@@ -48,5 +49,6 @@ if (FALSE) { # \dontrun{
 hyp  <- read_hypnogram("night_001.csv")
 arch <- compute_sleep_architecture(hyp)
 plot_architecture(arch)
+plot_architecture(arch, metric = "percentage")
 } # }
 ```
