@@ -222,6 +222,7 @@ articles:
   navbar: ~
   contents:
   - "`articles/mrpheus-integration`"
+  - "`articles/zeitR-integration`"
 
 news:
   releases:

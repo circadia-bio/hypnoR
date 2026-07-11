@@ -1,0 +1,217 @@
+---
+title: "Coarse hypnograms from actigraphy: a worked example with zeitR"
+description: |
+  A walkthrough of taking zeitR's rest-activity pipeline output through
+  hypnoR's coarse-staging path, using zeitR's own bundled ActTrust
+  validation recording. Along the way: timestamp gaps, why off-wrist time
+  quietly becomes "Wake," picking the right night out of a multi-day
+  recording, and whether smoothing even matters for actigraphy-derived
+  staging the way it did for mrpheus's raw automatic staging.
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse   = TRUE,
+  comment    = "#>",
+  fig.width  = 9,
+  fig.height = 3.5,
+  dpi        = 150,
+  out.width  = "100%"
+)
+has_zeitr <- requireNamespace("zeitR", quietly = TRUE)
+```
+
+```{r packages, message = FALSE}
+library(hypnoR)
+```
+
+```{r check-zeitr, echo = FALSE, results = "asis"}
+if (!has_zeitr) {
+  cat(
+    "_zeitR isn't installed in the environment that built this article, ",
+    "so the code below is shown but wasn't executed._",
+    sep = ""
+  )
+}
+```
+
+The [`mrpheus-integration`](mrpheus-integration.html) article walks through
+hypnoR's AASM path end-to-end using mrpheus's raw automatic PSG staging.
+Actigraphy-derived staging comes with a different set of things worth
+checking before you trust the metrics -- this picks up that same "check
+before you interpret" habit, using zeitR's bundled ActTrust recording
+instead.
+
+## Getting the data in
+
+zeitR ships a real validation recording, `input1.txt`, used in its own
+pipeline-parity tests against a Python reference implementation:
+
+```{r run-pipeline, eval = has_zeitr, message = FALSE}
+result <- zeitR::run_pipeline(
+  system.file("extdata", "input1.txt", package = "zeitR"),
+  tz    = "UTC",
+  quiet = TRUE
+)
+result
+```
+
+The `quiet = TRUE` above is deliberate, not just noise-suppression -- worth
+checking what it's actually quieting rather than reflexively silencing it:
+
+```{r check-consistency, eval = has_zeitr}
+result$issues
+```
+
+A handful of minor timestamp gaps, no backward jumps, no year artefacts.
+Small gaps like this are common in real wearable recordings (a missed
+transmission, a brief disconnect) and don't necessarily invalidate the
+recording -- but it's worth actually looking at `$issues` rather than
+assuming `quiet = TRUE` means "nothing to see here."
+
+## Into hypnoR
+
+```{r export, eval = has_zeitr}
+zeitr_hyp  <- zeitR::export_hypnogram(result)
+hyp        <- new_hypnogram(zeitr_hyp)
+attr(hyp, "resolution")
+nrow(hyp)
+```
+
+Coarse resolution, auto-detected correctly (no `N1`/`N2`/`N3`/`REM` labels
+in the data). `nrow(hyp)` is likely well beyond one night's worth of
+epochs -- `input1.txt` is a multi-day recording, which matters for
+everything that follows.
+
+## A caveat: off-wrist time is folded into "Wake"
+
+`zeitR::export_hypnogram()`'s stage mapping sends `state == 4` (off-wrist)
+to `"W"`, the same label as genuine wakefulness -- there's no fourth
+"unknown/off-wrist" category in hypnoR's 3-state coarse model. That's a
+reasonable simplification, not a bug, but it means a recording with
+substantial off-wrist time will show inflated Wake duration that isn't
+really about sleep/wake behaviour at all. Worth checking how much of this
+recording that actually is:
+
+```{r offwrist-check, eval = has_zeitr}
+offwrist_epochs <- sum(result$data$state == 4L)
+offwrist_epochs
+offwrist_epochs / nrow(result$data)  # proportion of the whole recording
+```
+
+If that proportion is small, it's a non-issue here. If a given analysis
+turned up unexpectedly long Wake/WASO on a specific night, this is the
+first place to check before concluding anything about sleep quality --
+the device could simply have been off the wrist.
+
+## Picking the right night
+
+`input1.txt` spans several nights (`result$nights`), so running metrics
+over the *entire* multi-day recording would be exactly the kind of mistake
+covered in the mrpheus article: `TST` would represent multiple nights'
+sleep combined, and `SOL` would be measured from the very start of the
+whole file rather than from any single night's actual bedtime.
+
+```{r nights, eval = has_zeitr}
+result$nights
+```
+
+Restrict to one real night using its own `bed_time`/`get_up_time` --
+exactly the `lights_off`/`lights_on` window `compute_sleep_architecture()`
+and `window_hypnogram()` expect:
+
+```{r window-night, eval = has_zeitr}
+night1 <- result$nights[!result$nights$is_nap, ][1L, ]
+night1
+
+hyp_night1 <- window_hypnogram(hyp, lights_off = night1$bed_time, lights_on = night1$get_up_time)
+nrow(hyp_night1)
+```
+
+## Does smoothing matter here the way it did for mrpheus?
+
+The mrpheus article found smoothing genuinely necessary, because
+`mrpheus::stage_epochs()` is a raw per-epoch argmax classifier with no
+continuity constraint. zeitR's pipeline is different: Crespo (2012)'s
+sleep-period detection and Cole-Kripke (1992)'s epoch scoring both impose
+their own temporal structure on the output, rather than staging each epoch
+independently. Worth checking whether `smooth_hypnogram()` actually finds
+anything to do here, rather than assuming the same lesson transfers
+automatically:
+
+```{r smooth-check, eval = has_zeitr}
+hyp_smooth <- smooth_hypnogram(hyp_night1, method = c("aasm_isolated", "min_run"), min_run_epochs = 4)
+mean(hyp_smooth$stage != hyp_smooth$stage_raw)
+```
+
+Whatever that number comes out to, compare it against the mrpheus
+article's equivalent check -- if it's much lower here, that's evidence the
+two staging sources genuinely differ in how much raw epoch-level noise
+they produce, not just a coincidence of this particular recording.
+
+## Metrics on the properly-windowed night
+
+```{r architecture, eval = has_zeitr}
+arch_night1 <- compute_sleep_architecture(hyp_night1)
+arch_night1
+```
+
+```{r transitions, eval = has_zeitr}
+trans_night1 <- compute_transitions(hyp_night1)
+trans_night1$matrix
+trans_night1$fragmentation
+```
+
+`compute_cycles()` remains AASM-only regardless of staging source -- coarse
+hypnograms have no REM stage to segment NREM/REM cycles on:
+
+```{r cycles-error, eval = has_zeitr, error = TRUE}
+compute_cycles(hyp_night1)
+```
+
+## Both plotting styles
+
+```{r plot-step, eval = has_zeitr, fig.height = 3}
+plot_hypnogram(hyp_night1)
+```
+
+```{r plot-capsule, eval = has_zeitr, fig.height = 3}
+plot_hypnogram(hyp_night1, style = "capsule")
+```
+
+```{r plot-architecture, eval = has_zeitr, fig.height = 3.5}
+plot_architecture(arch_night1)
+```
+
+## Main sleep vs naps, if there are any
+
+`result$nights$is_nap` distinguishes zeitR's main sleep periods from
+secondary (nap) periods. Worth checking whether this recording has any naps
+at all before assuming a single "the sleep period" exists per day:
+
+```{r naps-check, eval = has_zeitr}
+table(result$nights$is_nap)
+```
+
+If there are naps present, comparing their architecture against a main
+night (rather than pooling them together) avoids quietly averaging two
+physiologically different kinds of sleep opportunity into one number.
+
+## Takeaways
+
+- Actigraphy-derived hypnograms carry different caveats than automatic PSG
+  staging does -- off-wrist time masquerading as Wake is the zeitR-specific
+  one to check, the way scattered low-confidence REM was the mrpheus-specific
+  one.
+- `quiet = TRUE` (or any warning-suppression argument) is worth checking
+  what it's actually suppressing, not just trusting it silently.
+- Windowing to the real analysis period matters regardless of staging
+  source -- a multi-night actigraphy recording needs the same care a
+  multi-hour ambulatory PSG recording does.
+- Smoothing's necessity is a property of the *staging source*, not a
+  universal step to always apply -- checking whether it changes anything
+  is more honest than assuming a lesson from one pipeline transfers
+  unchanged to another.
+- `compute_cycles()`'s AASM-only requirement is a genuine constraint of
+  what coarse staging can support, not an arbitrary limitation -- there's
+  no REM stage in a 3-state model to segment cycles on.

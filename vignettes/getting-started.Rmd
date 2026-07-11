@@ -262,6 +262,7 @@ development. For now, hypnograms come from an upstream package
 (`mrpheus::export_hypnogram()`, `zeitR::export_hypnogram()`) or a hand-built
 tibble passed to `new_hypnogram()`, as shown above.
 
-See `vignette("mrpheus-integration", package = "hypnoR")` (or the "Worked
-examples" section of the pkgdown site) for a deeper, warts-and-all walk
-through cleaning up and interpreting real automatic staging output.
+See `vignette("mrpheus-integration", package = "hypnoR")` and
+`vignette("zeitR-integration", package = "hypnoR")` (or the "Worked
+examples" section of the pkgdown site) for deeper, warts-and-all walks
+through cleaning up and interpreting real staging output from each source.

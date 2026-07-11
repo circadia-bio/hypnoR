@@ -105,6 +105,13 @@
   `compute_cycles()` errors clearly (no REM stage to segment cycles on).
   Guarded with `requireNamespace("zeitR")`; `zeitR` added to `Suggests`.
   New `dev/test_zeitR_pipeline.R`, mirroring the mrpheus one.
+* Added a second worked-example article, `vignette("zeitR-integration")`:
+  the coarse-staging counterpart to `mrpheus-integration`, using the same
+  bundled ActTrust recording -- timestamp-gap inspection, why off-wrist
+  time is folded into `"W"`, picking the right night out of a multi-day
+  recording, and checking (rather than assuming) whether smoothing matters
+  as much for actigraphy-derived staging as it did for mrpheus's raw
+  automatic staging.
 
 * Rewrote `vignette("getting-started")` to reflect the actual current API
   (the previous version referenced `read_hypnogram()`, which doesn't exist
