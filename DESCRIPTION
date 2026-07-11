@@ -31,6 +31,7 @@ Imports:
     tibble (>= 3.0.0),
     utils
 Suggests:
+    covr,
     dplyr (>= 1.1.0),
     forcats (>= 1.0.0),
     ggplot2 (>= 3.4.0),

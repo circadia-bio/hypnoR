@@ -85,6 +85,14 @@
   hypnogram regardless of the window, which was inconsistent. Requires
   `hypnogram` to carry real timestamps; errors if `time` is entirely `NA`.
 
+### 🚀 CI
+
+* Added a `covr`-based coverage step to the `pkgdown.yaml` workflow,
+  writing a coverage badge (`docs/badges/coverage.json`) to `gh-pages` on
+  pushes to `main`/`master`/release (matching zeitR's setup). `covr` added
+  to `Suggests`; new `dev/check_coverage.R` for running coverage locally.
+  README gains `R CMD CHECK` and `Coverage` badges.
+
 ### 📚 Documentation
 
 * Rewrote `vignette("getting-started")` to reflect the actual current API

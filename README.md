@@ -4,6 +4,8 @@
 
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![R CMD CHECK](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/hypnoR/gh-pages/badges/coverage.json)](https://github.com/circadia-bio/hypnoR/actions/workflows/pkgdown.yaml)
 
 ---
 
