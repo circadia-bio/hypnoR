@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/circadia-bio/hypnoR/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/circadia-bio/hypnoR/blob/v0.1.1/DESCRIPTION)
 
 França L, Leocadio-Miguel M (2026). *hypnoR: Hypnogram Handling,
 Plotting, and Sleep Architecture Metrics*. R package version 0.1.1,
