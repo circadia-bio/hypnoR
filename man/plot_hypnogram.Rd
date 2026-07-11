@@ -27,8 +27,7 @@ Epoch duration is read from the object's \code{epoch_sec} attribute.}
 \item{\code{"step"}}{Classic clinical step-plot: one line tracing the
 stage at every epoch.}
 \item{\code{"capsule"}}{Rounded-pill bars per contiguous stage run, one
-lane per stage, with a vertical colour-gradient line connecting
-consecutive runs across lanes at each transition.}
+lane per stage.}
 }}
 
 \item{x_axis}{\code{"auto"} (default), \code{"time"}, or \code{"hours"}:
