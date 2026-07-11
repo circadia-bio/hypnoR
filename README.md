@@ -2,6 +2,7 @@
 
 **Hypnogram handling, plotting, and sleep architecture metrics for R — the staging-agnostic layer of the Circadia Lab ecosystem.**
 
+[![r-universe](https://circadia-bio.r-universe.dev/badges/hypnoR)](https://circadia-bio.r-universe.dev/hypnoR)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![R CMD CHECK](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml)
@@ -102,9 +103,21 @@ hypnoR/
 
 ## 🚀 Getting Started
 
-**Prerequisites:** R ≥ 4.1, `remotes`.
+**Prerequisites:** R ≥ 4.1.
+
+Install from [r-universe](https://circadia-bio.r-universe.dev) (recommended — pre-built binaries):
 
 ```r
+install.packages(
+  "hypnoR",
+  repos = c("https://circadia-bio.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
+Or install the development version from GitHub:
+
+```r
+# install.packages("remotes")
 remotes::install_github("circadia-bio/hypnoR")
 ```
 
