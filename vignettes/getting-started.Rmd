@@ -62,7 +62,8 @@ remotes::install_github("circadia-bio/hypnoR")
 
 ```{r load-staging, eval = has_mrpheus}
 staging <- readRDS(system.file("extdata", "SC4001E0_staging.rds", package = "mrpheus"))
-staging
+staging |> 
+  head()
 ```
 
 `staging` is mrpheus's raw per-epoch output: one row per 30-second epoch, an
