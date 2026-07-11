@@ -224,3 +224,10 @@ plot_hypnogram(hyp_sleep, style = "capsule")
   two methods encode a real, debatable scoring decision (interruption
   tolerance), not just an implementation detail – worth checking both
   rather than trusting one blindly.
+
+See
+[`zeitR-integration`](https://hypnor.circadia-lab.uk/articles/zeitR-integration.md)
+for the same kind of worked example on the coarse, actigraphy-derived
+side – different staging source, different caveats (off-wrist time,
+multi-night windowing), but the same habit of checking rather than
+assuming.

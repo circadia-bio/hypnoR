@@ -127,7 +127,7 @@
 
     <a class="navbar-brand me-2" href="index.html">hypnoR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -143,6 +143,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting started with hypnoR</a></li>
     <li><a class="dropdown-item" href="articles/mrpheus-integration.html">Cleaning up and interpreting real staging: a worked example with mrpheus</a></li>
+    <li><a class="dropdown-item" href="articles/zeitR-integration.html">Coarse hypnograms from actigraphy: a worked example with zeitR</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -173,7 +174,7 @@
 </h1>
 </div>
 <p><strong>Hypnogram handling, plotting, and sleep architecture metrics for R — the staging-agnostic layer of the Circadia Lab ecosystem.</strong></p>
-<p><a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://github.com/circadia-bio/hypnoR/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/hypnoR/gh-pages/badges/coverage.json" alt="Coverage"></a></p>
+<p><a href="https://circadia-bio.r-universe.dev/hypnoR" class="external-link"><img src="https://circadia-bio.r-universe.dev/badges/hypnoR" alt="r-universe"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://github.com/circadia-bio/hypnoR/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/hypnoR/gh-pages/badges/coverage.json" alt="Coverage"></a></p>
 <hr>
 <blockquote>
 <p>⚠️ <strong>hypnoR is in early development and has not been formally tested.</strong> The API may change without notice, estimation results have not yet been validated against a reference implementation, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.</p>
@@ -192,63 +193,93 @@
 <strong>Coarse</strong> (3-state: <code>W</code> / <code>Sleep</code> / <code>Quiet sleep</code>) — supplied by <strong>zeitR</strong>
 </li>
 </ul>
-<p>All metric functions are resolution-agnostic: they compute every metric that is possible given the available stages and return <code>NA</code> with an informative message for metrics that require full AASM staging.</p>
+<p>All metric and plotting functions are resolution-agnostic: they compute every metric that is possible given the available stages and return <code>NA</code> (documented per-function) for metrics that need finer staging than what’s available.</p>
 <p>Downstream, hypnoR feeds into <code>syncR::sync()</code> as part of the unified participant-indexed database.</p>
 </div>
 <div class="section level2">
 <h2 id="sparkles-features">✨ Features<a class="anchor" aria-label="anchor" href="#sparkles-features"></a>
 </h2>
 <ul>
-<li><p><strong>Flexible ingestion</strong> — <code><a href="reference/read_hypnogram.html">read_hypnogram()</a></code> reads EDF annotations, CSV, YASA output, Compumedics Profusion, and Nox Medical formats.</p></li>
-<li><p><strong>Architecture metrics</strong> — <code><a href="reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code> returns TST, SE, SOL, WASO, REM latency, SWS latency, and stage percentages; all metrics degrade gracefully for coarse hypnograms.</p></li>
-<li><p><strong>Cycle segmentation</strong> — <code><a href="reference/compute_cycles.html">compute_cycles()</a></code> detects NREM/REM cycles via Feinberg &amp; Floyd (1979) or AASM rules.</p></li>
-<li><p><strong>Transition analysis</strong> — <code><a href="reference/compute_transitions.html">compute_transitions()</a></code> builds a stage-to-stage transition probability matrix and computes a fragmentation index.</p></li>
-<li><p><strong>Publication-ready plots</strong> — <code><a href="reference/plot_hypnogram.html">plot_hypnogram()</a></code>, <code><a href="reference/plot_architecture.html">plot_architecture()</a></code>, and <code><a href="reference/plot_transition_matrix.html">plot_transition_matrix()</a></code> all use <code>theme_circadia()</code> from the <strong>circadia</strong> shared visual identity package.</p></li>
+<li><p>🏗️ <strong><code><a href="reference/new_hypnogram.html">new_hypnogram()</a></code></strong> — the constructor everything else goes through. Accepts a bare tibble with <code>epoch</code>/<code>stage</code> columns (e.g. <code><a href="https://zeitr.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">zeitR::export_hypnogram()</a></code> output) or an <code>mrpheus_hypnogram</code> object (<code><a href="https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">mrpheus::export_hypnogram()</a></code> output), auto-detecting AASM vs coarse resolution and normalising both into one representation.</p></li>
+<li><p>🧹 <strong><code><a href="reference/smooth_hypnogram.html">smooth_hypnogram()</a></code></strong> — cleans up isolated single-epoch stage flips from raw, unsmoothed per-epoch classifiers, via two label-only rules (<code>aasm_isolated</code>, <code>min_run</code>), applicable independently or in sequence.</p></li>
+<li><p>🪟 <strong><code><a href="reference/window_hypnogram.html">window_hypnogram()</a></code></strong> — restricts a hypnogram to a time (<code>lights_off</code>/<code>lights_on</code>) or epoch (<code>from_epoch</code>/<code>to_epoch</code>) window before any metric sees it.</p></li>
+<li><p>📐 <strong><code><a href="reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code></strong> — TST, TIB, SE, SOL, WASO, REM/SWS latency, and stage percentages; degrades gracefully for coarse hypnograms.</p></li>
+<li><p>🌙 <strong><code><a href="reference/compute_cycles.html">compute_cycles()</a></code></strong> — NREM/REM cycle segmentation via Feinberg &amp; Floyd (1979) (<code>method = "feinberg_floyd"</code>) or a gap-tolerant variant (<code>method = "aasm"</code>). Full AASM staging only.</p></li>
+<li><p>🔀 <strong><code><a href="reference/compute_transitions.html">compute_transitions()</a></code></strong> — stage-to-stage transition matrix (counts or probabilities) plus a fragmentation index and wake-transition count.</p></li>
+<li><p>🎨 <strong><code><a href="reference/plot_hypnogram.html">plot_hypnogram()</a></code></strong>, <strong><code><a href="reference/plot_architecture.html">plot_architecture()</a></code></strong>, <strong><code><a href="reference/plot_transition_matrix.html">plot_transition_matrix()</a></code></strong> — publication-ready plots built on <code>ggplot2</code> (a runtime-checked, not hard, dependency) and a shared Circadia Lab colour palette. <code><a href="reference/plot_hypnogram.html">plot_hypnogram()</a></code> supports two visual styles: <code>"step"</code> (classic clinical trace) and <code>"capsule"</code> (rounded-pill bars per stage run, one lane per stage).</p></li>
 </ul>
+<div class="section level3">
+<h3 id="construction-coming-soon">🚧 Coming soon<a class="anchor" aria-label="anchor" href="#construction-coming-soon"></a>
+</h3>
+<ul>
+<li>
+<strong><code><a href="reference/read_hypnogram.html">read_hypnogram()</a></code></strong> — direct ingestion from CSV, EDF annotations, YASA output, Compumedics Profusion, and Nox Medical files. Not yet implemented; for now, hypnograms come from an upstream package (<code><a href="https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">mrpheus::export_hypnogram()</a></code>, <code><a href="https://zeitr.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">zeitR::export_hypnogram()</a></code>) or a hand-built tibble passed to <code><a href="reference/new_hypnogram.html">new_hypnogram()</a></code>.</li>
+</ul>
+</div>
 </div>
 <div class="section level2">
 <h2 id="card_index_dividers-project-structure">🗂️ Project Structure<a class="anchor" aria-label="anchor" href="#card_index_dividers-project-structure"></a>
 </h2>
 <pre><code>hypnoR/
 ├── R/
-│   ├── hypnoR-package.R       # package-level docs
-│   ├── read_hypnogram.R       # ingestion
-│   ├── architecture.R         # compute_sleep_architecture()
-│   ├── cycles.R               # compute_cycles()
-│   ├── transitions.R          # compute_transitions()
-│   ├── plot.R                 # plot_hypnogram(), plot_architecture(),
-│   │                          #   plot_transition_matrix()
-│   └── utils.R                # internal helpers
+│   ├── hypnoR-package.R        # package-level docs
+│   ├── new_hypnogram.R         # new_hypnogram() constructor
+│   ├── smooth.R                # smooth_hypnogram()
+│   ├── window_hypnogram.R      # window_hypnogram()
+│   ├── architecture.R          # compute_sleep_architecture()
+│   ├── cycles.R                # compute_cycles()
+│   ├── transitions.R           # compute_transitions()
+│   ├── read_hypnogram.R        # ingestion (not yet implemented)
+│   ├── plot.R                  # plot_hypnogram(), plot_architecture(),
+│   │                           #   plot_transition_matrix()
+│   └── utils.R                 # internal helpers, stage colour palette
 ├── tests/testthat/
 ├── vignettes/
-│   └── getting-started.Rmd
-├── man/figures/               # logo, favicon, card
-├── .github/workflows/         # R CMD CHECK + pkgdown CI
+│   ├── getting-started.Rmd
+│   └── articles/
+│       ├── mrpheus-integration.Rmd  # worked example: AASM/mrpheus
+│       └── zeitR-integration.Rmd    # worked example: coarse/zeitR
+├── man/figures/                # logo, favicon, card
+├── .github/workflows/          # R CMD CHECK + pkgdown/coverage CI
 ├── _pkgdown.yml
 └── DESCRIPTION</code></pre>
 </div>
 <div class="section level2">
 <h2 id="rocket-getting-started">🚀 Getting Started<a class="anchor" aria-label="anchor" href="#rocket-getting-started"></a>
 </h2>
-<p><strong>Prerequisites:</strong> R ≥ 4.1, <code>remotes</code>.</p>
+<p><strong>Prerequisites:</strong> R ≥ 4.1.</p>
+<p>Install from <a href="https://circadia-bio.r-universe.dev" class="external-link">r-universe</a> (recommended — pre-built binaries):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"circadia-bio/hypnoR"</span><span class="op">)</span></span></code></pre></div>
-<p>To reproduce the vignettes with real evaluated output (rather than just the code), also install <strong>mrpheus</strong> from its r-universe:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
-<span>  <span class="st">"mrpheus"</span>,</span>
+<span>  <span class="st">"hypnoR"</span>,</span>
 <span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://circadia-bio.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><strong>Basic workflow:</strong></p>
+<p>Or install the development version from GitHub:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"circadia-bio/hypnoR"</span><span class="op">)</span></span></code></pre></div>
+<p>To reproduce the vignettes with real evaluated output (rather than just the code), also install <strong>mrpheus</strong> and <strong>zeitR</strong> from their r-universe:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mrpheus"</span>, <span class="st">"zeitR"</span><span class="op">)</span>,</span>
+<span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://circadia-bio.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><strong>Basic workflow</strong> (see <code><a href="articles/getting-started.html">vignette("getting-started")</a></code> for the full walkthrough, including where <code>staging</code>/<code>result</code> come from in each case):</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hypnor.circadia-lab.uk">hypnoR</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">hyp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_hypnogram.html">read_hypnogram</a></span><span class="op">(</span><span class="st">"night_001.csv"</span><span class="op">)</span></span>
-<span><span class="va">arch</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_sleep_architecture.html">compute_sleep_architecture</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
-<span><span class="va">cyc</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span>           <span class="co"># full AASM only</span></span>
-<span><span class="va">trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_transitions.html">compute_transitions</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
+<span><span class="co"># From mrpheus (full AASM)</span></span>
+<span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_hypnogram.html">new_hypnogram</a></span><span class="op">(</span><span class="fu">mrpheus</span><span class="fu">::</span><span class="fu"><a href="https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">export_hypnogram</a></span><span class="op">(</span><span class="va">staging</span>, epoch_s <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
+<span><span class="co"># ...or from zeitR (coarse) -- same functions from here on, either way</span></span>
+<span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_hypnogram.html">new_hypnogram</a></span><span class="op">(</span><span class="fu">zeitR</span><span class="fu">::</span><span class="fu"><a href="https://zeitr.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">export_hypnogram</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">hyp</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/smooth_hypnogram.html">smooth_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span>          <span class="co"># optional cleanup</span></span>
+<span><span class="va">arch</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_sleep_architecture.html">compute_sleep_architecture</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
+<span><span class="va">trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_transitions.html">compute_transitions</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span>
+<span><span class="va">cyc</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span>            <span class="co"># full AASM only</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span>, cycles <span class="op">=</span> <span class="va">cyc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_architecture.html">plot_architecture</a></span><span class="op">(</span><span class="va">arch</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_transition_matrix.html">plot_transition_matrix</a></span><span class="op">(</span><span class="va">trans</span><span class="op">$</span><span class="va">matrix</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -257,50 +288,63 @@
 </h2>
 <table class="table">
 <colgroup>
-<col width="50%">
-<col width="50%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr>
 <th>Package</th>
+<th>Type</th>
 <th>Role</th>
 </tr></thead>
 <tbody>
 <tr>
 <td><code>cli</code></td>
+<td>Imports</td>
 <td>User-facing messages and errors</td>
 </tr>
 <tr>
-<td><code>dplyr</code></td>
-<td>Tabular data manipulation</td>
-</tr>
-<tr>
-<td><code>lubridate</code></td>
-<td>Timestamp handling</td>
-</tr>
-<tr>
-<td><code>rlang</code></td>
-<td>Tidy eval and error helpers</td>
+<td><code>stats</code></td>
+<td>Imports</td>
+<td>Faceting in <code><a href="reference/plot_architecture.html">plot_architecture()</a></code>
+</td>
 </tr>
 <tr>
 <td><code>tibble</code></td>
+<td>Imports</td>
 <td>Tidy output objects</td>
 </tr>
 <tr>
-<td><code>tidyr</code></td>
-<td>Reshaping for transition matrices</td>
+<td><code>utils</code></td>
+<td>Imports</td>
+<td>NSE variable declarations for <code>ggplot2</code>
+</td>
+</tr>
+<tr>
+<td><code>ggplot2</code></td>
+<td>Suggests</td>
+<td>Plotting — checked at runtime, not required to use the metric functions</td>
 </tr>
 <tr>
 <td>
-<code>ggplot2</code> <em>(Suggests)</em>
+<code>mrpheus</code>, <code>zeitR</code>
 </td>
-<td>Plotting</td>
+<td>Suggests</td>
+<td>Real-data vignettes (both on <a href="https://circadia-bio.r-universe.dev" class="external-link">circadia-bio’s r-universe</a>)</td>
 </tr>
 <tr>
 <td>
-<code>circadia</code> <em>(Suggests)</em>
+<code>covr</code>, <code>testthat</code>
 </td>
-<td>Shared colour palette and <code>theme_circadia()</code>
+<td>Suggests</td>
+<td>Test coverage and the test suite</td>
+</tr>
+<tr>
+<td>
+<code>knitr</code>, <code>rmarkdown</code>, <code>pkgdown</code>
 </td>
+<td>Suggests</td>
+<td>Vignettes and documentation site</td>
 </tr>
 </tbody>
 </table>
@@ -337,7 +381,6 @@
 <li>📦 <a href="https://github.com/circadia-bio/zeitR" class="external-link"><strong>zeitR</strong></a> — wrist actigraphy analysis and circadian metrics; upstream source of coarse hypnograms</li>
 <li>📦 <a href="https://github.com/circadia-bio/mrpheus" class="external-link"><strong>mrpheus</strong></a> — PSG signal analysis; upstream source of full AASM hypnograms</li>
 <li>📦 <a href="https://github.com/circadia-bio/syncR" class="external-link"><strong>syncR</strong></a> — integrates zeitR, slumbR, tallieR, and hypnoR into a unified participant-indexed database</li>
-<li>📦 <a href="https://github.com/circadia-bio/circadia" class="external-link"><strong>circadia</strong></a> — shared visual identity: palettes, themes, and scales</li>
 <li>🔬 <a href="https://github.com/circadia-bio" class="external-link"><strong>circadia-bio</strong></a> — the Circadia Lab GitHub organisation</li>
 </ul>
 </div>

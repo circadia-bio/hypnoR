@@ -3,7 +3,8 @@
 `new_hypnogram()` is the low-level constructor for the
 `hypnor_hypnogram` class used throughout `hypnoR`. It normalises
 hypnogram-shaped input – whether a bare tibble (as produced by
-`zeitR::export_hypnogram()` or
+[`zeitR::export_hypnogram()`](https://zeitr.circadia-lab.uk/reference/export_hypnogram.html)
+or
 [`read_hypnogram()`](https://hypnor.circadia-lab.uk/reference/read_hypnogram.md))
 or a specially classed object (currently:
 [`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html)'s

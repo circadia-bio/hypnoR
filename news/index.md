@@ -1,6 +1,6 @@
 # Changelog
 
-## hypnoR (development version)
+## hypnoR 0.1.1 (2026-07)
 
 ### ✨ New features
 
@@ -8,8 +8,8 @@
   [`new_hypnogram()`](https://hypnor.circadia-lab.uk/reference/new_hypnogram.md),
   the constructor underlying all other hypnoR functions. Accepts either
   a bare tibble with `epoch`/`stage` columns
-  (e.g. `zeitR::export_hypnogram()` output) or an `mrpheus_hypnogram`
-  object
+  (e.g. [`zeitR::export_hypnogram()`](https://zeitr.circadia-lab.uk/reference/export_hypnogram.html)
+  output) or an `mrpheus_hypnogram` object
   ([`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html)
   output), normalising both into a single `hypnor_hypnogram`
   representation. Staging resolution (AASM vs coarse) is auto-detected
@@ -121,6 +121,13 @@
 
 ### 🚀 CI
 
+- Fixed mrpheus/zeitR dependency resolution in CI: added
+  `Additional_repositories: https://circadia-bio.r-universe.dev` and a
+  repo-root `.Rprofile` setting `options(repos = ...)` directly.
+  `Additional_repositories` alone doesn’t automatically wire into
+  `pak`’s dependency resolution during CI – it’s mainly a
+  documentation/NOTE- suppression field – so the `.Rprofile` is what
+  actually makes both packages resolvable.
 - Added a `covr`-based coverage step to the `pkgdown.yaml` workflow,
   writing a coverage badge (`docs/badges/coverage.json`) to `gh-pages`
   on pushes to `main`/`master`/release (matching zeitR’s setup). `covr`
@@ -133,18 +140,34 @@
   [`vignette("getting-started")`](https://hypnor.circadia-lab.uk/articles/getting-started.md)
   to reflect the actual current API (the previous version referenced
   [`read_hypnogram()`](https://hypnor.circadia-lab.uk/reference/read_hypnogram.md),
-  which doesn’t exist yet) and to run against a real recording –
-  mrpheus’s bundled `SC4001E0` example – rather than hypothetical
-  placeholder code.
-- Added a second article, `vignette("mrpheus-integration")` (“Worked
-  examples” on the pkgdown site): a warts-and-all walkthrough of
-  diagnosing scattered raw REM calls, smoothing, windowing to the real
-  sleep period, and comparing
+  which doesn’t exist yet), and to run against real recordings from both
+  staging sources rather than hypothetical placeholder code: mrpheus’s
+  bundled `SC4001E0` example for the AASM path, and zeitR’s bundled
+  `input1.txt` ActTrust recording (via its full rest-activity pipeline)
+  for the coarse path – demonstrating the staging-agnostic contract
+  concretely:
+  [`compute_sleep_architecture()`](https://hypnor.circadia-lab.uk/reference/compute_sleep_architecture.md)
+  returns `NA` for AASM-only fields on coarse hypnograms and populates
+  the coarse-only ones instead,
+  [`compute_transitions()`](https://hypnor.circadia-lab.uk/reference/compute_transitions.md)
+  works over a 3x3 matrix instead of 5x5, and
+  [`compute_cycles()`](https://hypnor.circadia-lab.uk/reference/compute_cycles.md)
+  errors clearly on coarse staging (no REM stage to segment cycles on).
+  Both mrpheus- and zeitR-dependent chunks are guarded with
+  [`requireNamespace()`](https://rdrr.io/r/base/ns-load.html); both
+  packages added to `Suggests`. New `dev/test_mrpheus_pipeline.R` and
+  `dev/test_zeitR_pipeline.R`.
+- Added two worked-example articles (“Worked examples” on the pkgdown
+  site), cross-linked to each other: `vignette("mrpheus-integration")`,
+  a warts-and-all walkthrough of diagnosing scattered raw REM calls,
+  smoothing, windowing to the real sleep period, and comparing
   [`compute_cycles()`](https://hypnor.circadia-lab.uk/reference/compute_cycles.md)’s
-  two methods, using the same recording. Both vignettes are guarded with
-  [`requireNamespace("mrpheus")`](https://mrpheus.circadia-lab.uk) so
-  they still build (showing code, not evaluated output) in environments
-  without mrpheus installed.
+  two methods; and `vignette("zeitR-integration")`, the coarse-staging
+  counterpart – timestamp-gap inspection, why off-wrist time is folded
+  into `"W"`, picking the right night out of a multi-day recording, and
+  checking (rather than assuming) whether smoothing matters as much for
+  actigraphy-derived staging as it did for mrpheus’s raw automatic
+  staging.
 
 ## hypnoR 0.1.0 (2026-06)
 

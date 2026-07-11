@@ -92,7 +92,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hypnoR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,6 +106,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with hypnoR</a></li>
     <li><a class="dropdown-item" href="../articles/mrpheus-integration.html">Cleaning up and interpreting real staging: a worked example with mrpheus</a></li>
+    <li><a class="dropdown-item" href="../articles/zeitR-integration.html">Coarse hypnograms from actigraphy: a worked example with zeitR</a></li>
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
@@ -140,6 +141,8 @@
 
       <dl><dt><a href="mrpheus-integration.html">Cleaning up and interpreting real staging: a worked example with mrpheus</a></dt>
         <dd><p>A warts-and-all walkthrough of taking mrpheus’s raw automatic staging output through hypnoR’s full pipeline, using the same SC4001 recording as mrpheus’s own sleep-staging-demo article. Along the way: why the raw hypnogram looks messier than a textbook figure, whether that’s a bug, smoothing, windowing, and comparing cycle-detection methods.</p>
+        </dd><dt><a href="zeitR-integration.html">Coarse hypnograms from actigraphy: a worked example with zeitR</a></dt>
+        <dd><p>A walkthrough of taking zeitR’s rest-activity pipeline output through hypnoR’s coarse-staging path, using zeitR’s own bundled ActTrust validation recording. Along the way: timestamp gaps, why off-wrist time quietly becomes “Wake,” picking the right night out of a multi-day recording, and whether smoothing even matters for actigraphy-derived staging the way it did for mrpheus’s raw automatic staging.</p>
       </dd></dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
