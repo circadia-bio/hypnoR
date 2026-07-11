@@ -41,8 +41,10 @@ window_hypnogram(
   `hypnogram` to carry real timestamps (i.e. `start_time` was supplied
   to
   [`new_hypnogram()`](https://hypnor.circadia-lab.uk/reference/new_hypnogram.md)
-  or `mrpheus::export_hypnogram()`) – errors if `time` is entirely `NA`.
-  Mutually exclusive with `from_epoch`/`to_epoch`.
+  or
+  [`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html))
+  – errors if `time` is entirely `NA`. Mutually exclusive with
+  `from_epoch`/`to_epoch`.
 
 - from_epoch, to_epoch:
 

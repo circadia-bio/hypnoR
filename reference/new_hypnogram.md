@@ -6,8 +6,9 @@ hypnogram-shaped input – whether a bare tibble (as produced by
 `zeitR::export_hypnogram()` or
 [`read_hypnogram()`](https://hypnor.circadia-lab.uk/reference/read_hypnogram.md))
 or a specially classed object (currently:
-`mrpheus::export_hypnogram()`'s `mrpheus_hypnogram`) – into the single
-internal representation that every other `hypnoR` function expects.
+[`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html)'s
+`mrpheus_hypnogram`) – into the single internal representation that
+every other `hypnoR` function expects.
 
 ## Usage
 

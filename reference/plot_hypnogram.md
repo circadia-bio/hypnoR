@@ -62,7 +62,8 @@ plot_hypnogram(
   :   Forces clock time; errors if `time` is entirely `NA` (no
       `start_time` was supplied to
       [`new_hypnogram()`](https://hypnor.circadia-lab.uk/reference/new_hypnogram.md)
-      or `mrpheus::export_hypnogram()`).
+      or
+      [`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html)).
 
   `"hours"`
 

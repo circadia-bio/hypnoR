@@ -9,9 +9,11 @@
   the constructor underlying all other hypnoR functions. Accepts either
   a bare tibble with `epoch`/`stage` columns
   (e.g. `zeitR::export_hypnogram()` output) or an `mrpheus_hypnogram`
-  object (`mrpheus::export_hypnogram()` output), normalising both into a
-  single `hypnor_hypnogram` representation. Staging resolution (AASM vs
-  coarse) is auto-detected from the stage labels present.
+  object
+  ([`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html)
+  output), normalising both into a single `hypnor_hypnogram`
+  representation. Staging resolution (AASM vs coarse) is auto-detected
+  from the stage labels present.
 - Implemented
   [`compute_sleep_architecture()`](https://hypnor.circadia-lab.uk/reference/compute_sleep_architecture.md):
   TST, TIB, SE, SOL, WASO, REM/SWS latency, and stage percentages, all
@@ -39,14 +41,14 @@
 - Added
   [`smooth_hypnogram()`](https://hypnor.circadia-lab.uk/reference/smooth_hypnogram.md),
   a hypnogram-level cleanup step for raw unsmoothed per-epoch staging
-  (e.g. `mrpheus::stage_epochs()`, which has no temporal continuity
-  constraint and can produce isolated single-epoch stage flips). Two
-  label-only rules, applicable independently or in sequence:
-  `"aasm_isolated"` (default) reassigns a single epoch flanked
-  identically on both sides; `"min_run"` merges any run shorter than
-  `min_run_epochs` into whichever flanking run is longer, regardless of
-  whether the flanks agree. The original labels are preserved in a new
-  `stage_raw` column.
+  (e.g. [`mrpheus::stage_epochs()`](https://mrpheus.circadia-lab.uk/reference/stage_epochs.html),
+  which has no temporal continuity constraint and can produce isolated
+  single-epoch stage flips). Two label-only rules, applicable
+  independently or in sequence: `"aasm_isolated"` (default) reassigns a
+  single epoch flanked identically on both sides; `"min_run"` merges any
+  run shorter than `min_run_epochs` into whichever flanking run is
+  longer, regardless of whether the flanks agree. The original labels
+  are preserved in a new `stage_raw` column.
 - Added
   [`window_hypnogram()`](https://hypnor.circadia-lab.uk/reference/window_hypnogram.md):
   restricts a hypnogram to a time (`lights_off`/ `lights_on`) or epoch
@@ -81,9 +83,10 @@
   `"hours"`). When the hypnogram carries real timestamps
   (i.e. `start_time` was supplied to
   [`new_hypnogram()`](https://hypnor.circadia-lab.uk/reference/new_hypnogram.md)
-  or `mrpheus::export_hypnogram()`), the x-axis now shows actual clock
-  time by default instead of always using elapsed hours since the first
-  epoch.
+  or
+  [`mrpheus::export_hypnogram()`](https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html)),
+  the x-axis now shows actual clock time by default instead of always
+  using elapsed hours since the first epoch.
 - [`plot_hypnogram()`](https://hypnor.circadia-lab.uk/reference/plot_hypnogram.md)
   gains a `style` argument: `"step"` (default, unchanged) or `"capsule"`
   – rounded-pill bars per contiguous stage run, one lane per stage,
@@ -139,9 +142,9 @@
   sleep period, and comparing
   [`compute_cycles()`](https://hypnor.circadia-lab.uk/reference/compute_cycles.md)’s
   two methods, using the same recording. Both vignettes are guarded with
-  [`requireNamespace("mrpheus")`](https://rdrr.io/r/base/ns-load.html)
-  so they still build (showing code, not evaluated output) in
-  environments without mrpheus installed.
+  [`requireNamespace("mrpheus")`](https://mrpheus.circadia-lab.uk) so
+  they still build (showing code, not evaluated output) in environments
+  without mrpheus installed.
 
 ## hypnoR 0.1.0 (2026-06)
 

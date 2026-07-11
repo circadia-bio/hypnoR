@@ -189,8 +189,6 @@ smoothing, windowing, and comparing cycle-detection methods.">
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hypnor.circadia-lab.uk">hypnoR</a></span><span class="op">)</span></span></code></pre></div>
-<p><em>mrpheus isn’t installed in the environment that built this
-article, so the code below is shown but wasn’t executed.</em></p>
 <p>This picks up exactly where mrpheus’s <code>sleep-staging-demo</code>
 article leaves off: staging is done, and the resulting tibble is ready
 to hand to hypnoR. What follows is the actual process of turning that
@@ -203,12 +201,13 @@ informative.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">staging</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"SC4001E0_staging.rds"</span>, package <span class="op">=</span> <span class="st">"mrpheus"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">mrp_hyp</span> <span class="op">&lt;-</span> <span class="fu">mrpheus</span><span class="fu">::</span><span class="fu">export_hypnogram</span><span class="op">(</span></span>
+<span><span class="va">mrp_hyp</span> <span class="op">&lt;-</span> <span class="fu">mrpheus</span><span class="fu">::</span><span class="fu"><a href="https://mrpheus.circadia-lab.uk/reference/export_hypnogram.html" class="external-link">export_hypnogram</a></span><span class="op">(</span></span>
 <span>  <span class="va">staging</span>,</span>
 <span>  epoch_s        <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>  start_time     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2024-01-01 16:13:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span>,</span>
 <span>  participant_id <span class="op">=</span> <span class="st">"SC4001"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Hypnogram ready: 2650 epochs. Pass to `hypnor::new_hypnogram()` once <span style="color: #0000BB;">hypnor</span> is available.</span></span>
 <span></span>
 <span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_hypnogram.html">new_hypnogram</a></span><span class="op">(</span><span class="va">mrp_hyp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -217,6 +216,7 @@ informative.</p>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span><span class="op">)</span></span></code></pre></div>
+<p><img src="mrpheus-integration_files/figure-html/plot-raw-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Two things jump out. First, REM appears scattered across nearly the
 whole 22-hour recording, including well into what should be plain
 daytime Wake. Second, the trace looks a lot busier than the smooth
@@ -226,7 +226,7 @@ textbook hypnograms you’re used to seeing.</p>
 <h2 id="is-this-a-bug">Is this a bug?<a class="anchor" aria-label="anchor" href="#is-this-a-bug"></a>
 </h2>
 <p>Worth checking rather than assuming either way.
-<code>mrpheus::stage_epochs()</code>’s entire staging decision is:</p>
+<code><a href="https://mrpheus.circadia-lab.uk/reference/stage_epochs.html" class="external-link">mrpheus::stage_epochs()</a></code>’s entire staging decision is:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stage</span> <span class="op">&lt;-</span> <span class="va">stage_labels</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">probs</span>, <span class="fl">1</span>, <span class="va">which.max</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <p>A pure per-epoch argmax over the LightGBM posteriors, with <strong>no
@@ -250,7 +250,11 @@ scattered REM epochs concentrated among low-confidence calls?</p>
 <span><span class="va">sustained_rem</span> <span class="op">&lt;-</span> <span class="va">staging</span><span class="op">$</span><span class="va">confidence</span><span class="op">[</span><span class="va">staging</span><span class="op">$</span><span class="va">stage</span> <span class="op">==</span> <span class="st">"REM"</span> <span class="op">&amp;</span> <span class="va">staging</span><span class="op">$</span><span class="va">run_length</span> <span class="op">&gt;=</span> <span class="fl">5</span><span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">isolated_rem</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sustained_rem</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt;  0.2751  0.3972  0.4441  0.4632  0.5059  0.8922</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sustained_rem</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt;  0.3295  0.4481  0.5408  0.5720  0.6814  0.8640</span></span></code></pre></div>
 <p>Isolated single-epoch REM calls carry meaningfully lower confidence
 than REM epochs that are part of a sustained, multi-minute run. That’s
 consistent with “genuine borderline calls,” not a processing error –
@@ -267,12 +271,16 @@ sleep is usually implausible even when the classifier briefly favoured
 it, and it’s worth cleaning up before cycle detection sees it.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hyp_smooth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smooth_hypnogram.html">smooth_hypnogram</a></span><span class="op">(</span><span class="va">hyp</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aasm_isolated"</span>, <span class="st">"min_run"</span><span class="op">)</span>, min_run_epochs <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage</span> <span class="op">!=</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage_raw</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage</span> <span class="op">!=</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage_raw</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.1283019</span></span></code></pre></div>
 <p>Worth checking what’s actually left rather than assuming smoothing
 solved everything:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rl_smooth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rle.html" class="external-link">rle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">hyp_smooth</span><span class="op">$</span><span class="va">stage</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">rl_smooth</span><span class="op">$</span><span class="va">lengths</span><span class="op">[</span><span class="va">rl_smooth</span><span class="op">$</span><span class="va">values</span> <span class="op">==</span> <span class="st">"REM"</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">rl_smooth</span><span class="op">$</span><span class="va">lengths</span><span class="op">[</span><span class="va">rl_smooth</span><span class="op">$</span><span class="va">values</span> <span class="op">==</span> <span class="st">"REM"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  1  2  3  4  6  7  9 10 12 13 14 17 </span></span>
+<span><span class="co">#&gt;  1  2  1  3  1  6  1  1  1  1  2  2</span></span></code></pre></div>
 <p>Most of the remaining REM runs are 3.5-8.5 minutes long –
 individually plausible REM bout durations, not noise. There are simply
 <em>more separate REM excursions</em> across the night than one
@@ -283,7 +291,8 @@ force the count down, which is the wrong lever to pull.
 exactly this situation – fragmented REM separated by brief interruptions
 that shouldn’t count as separate cycles:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp_smooth</span>, method <span class="op">=</span> <span class="st">"aasm"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp_smooth</span>, method <span class="op">=</span> <span class="st">"aasm"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 10</span></span></code></pre></div>
 <p>Still high. The remaining explanation: some of those REM excursions
 are sitting out in daytime Wake, far from the main nocturnal cluster,
 each getting counted as its own “cycle” simply because nothing else is
@@ -304,9 +313,11 @@ exactly on the true sleep offset:</p>
 <span><span class="va">onset_epoch</span>  <span class="op">&lt;-</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">epoch</span><span class="op">[</span><span class="va">sleep_idx</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">offset_epoch</span> <span class="op">&lt;-</span> <span class="va">hyp_smooth</span><span class="op">$</span><span class="va">epoch</span><span class="op">[</span><span class="va">sleep_idx</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sleep_idx</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="op">(</span><span class="va">offset_epoch</span> <span class="op">-</span> <span class="va">onset_epoch</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">30</span> <span class="op">/</span> <span class="fl">3600</span>  <span class="co"># duration in hours -- sanity check</span></span>
+<span><span class="co">#&gt; [1] 15.48333</span></span>
 <span></span>
 <span><span class="va">hyp_sleep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/window_hypnogram.html">window_hypnogram</a></span><span class="op">(</span><span class="va">hyp_smooth</span>, from_epoch <span class="op">=</span> <span class="va">onset_epoch</span>, to_epoch <span class="op">=</span> <span class="va">offset_epoch</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, method <span class="op">=</span> <span class="st">"aasm"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, method <span class="op">=</span> <span class="st">"aasm"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 10</span></span></code></pre></div>
 <p>A duration in the expected 7-8 hour range, and a cycle count that now
 sits in a physiologically ordinary range – confirming the earlier
 inflated count really was a daytime-Wake artifact of analysing the whole
@@ -323,7 +334,9 @@ recording, not something smoothing could have fixed.</p>
 <span><span class="va">cyc_aasm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_cycles.html">compute_cycles</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, method <span class="op">=</span> <span class="st">"aasm"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cyc_ff</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cyc_aasm</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 15</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cyc_aasm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 10</span></span></code></pre></div>
 <p><code>feinberg_floyd</code> (no interruption tolerance) tends to
 fragment more aggressively than <code>aasm</code> (tolerates brief
 non-REM interruptions up to <code>rem_gap_min</code> minutes) – which
@@ -336,8 +349,10 @@ a settled fact.</p>
 </h2>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, cycles <span class="op">=</span> <span class="va">cyc_aasm</span><span class="op">)</span></span></code></pre></div>
+<p><img src="mrpheus-integration_files/figure-html/plot-final-step-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_hypnogram.html">plot_hypnogram</a></span><span class="op">(</span><span class="va">hyp_sleep</span>, style <span class="op">=</span> <span class="st">"capsule"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="mrpheus-integration_files/figure-html/plot-final-capsule-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="takeaways">Takeaways<a class="anchor" aria-label="anchor" href="#takeaways"></a>

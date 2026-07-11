@@ -99,6 +99,17 @@ participant-indexed database.
 remotes::install_github("circadia-bio/hypnoR")
 ```
 
+To reproduce the vignettes with real evaluated output (rather than just
+the code), also install **mrpheus** from its r-universe:
+
+``` r
+
+install.packages(
+  "mrpheus",
+  repos = c("https://circadia-bio.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
 **Basic workflow:**
 
 ``` r

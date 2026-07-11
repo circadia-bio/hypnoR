@@ -1,10 +1,11 @@
 # Smooth a hypnogram by reassigning short, likely-spurious runs
 
 Raw automatic sleep staging is typically a per-epoch classification with
-no temporal continuity constraint (e.g. `mrpheus::stage_epochs()` is a
-pure per-epoch argmax over posterior probabilities), which can produce
-brief, isolated stage flips inconsistent with sleep physiology – a
-single REM epoch nested inside an N2 run, for instance.
+no temporal continuity constraint (e.g.
+[`mrpheus::stage_epochs()`](https://mrpheus.circadia-lab.uk/reference/stage_epochs.html)
+is a pure per-epoch argmax over posterior probabilities), which can
+produce brief, isolated stage flips inconsistent with sleep physiology –
+a single REM epoch nested inside an N2 run, for instance.
 `smooth_hypnogram()` offers two independent, rule-based cleanup passes
 that operate purely on stage labels (no posterior probabilities
 required, and none are carried through by

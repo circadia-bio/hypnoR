@@ -5,9 +5,6 @@
 library(hypnoR)
 ```
 
-*mrpheus isn’t installed in the environment that built this article, so
-the code below is shown but wasn’t executed.*
-
 This picks up exactly where mrpheus’s `sleep-staging-demo` article
 leaves off: staging is done, and the resulting tibble is ready to hand
 to hypnoR. What follows is the actual process of turning that raw
@@ -26,6 +23,7 @@ mrp_hyp <- mrpheus::export_hypnogram(
   start_time     = as.POSIXct("2024-01-01 16:13:00", tz = "UTC"),
   participant_id = "SC4001"
 )
+#> ✔ Hypnogram ready: 2650 epochs. Pass to `hypnor::new_hypnogram()` once hypnor is available.
 
 hyp <- new_hypnogram(mrp_hyp)
 ```
@@ -37,6 +35,8 @@ hyp <- new_hypnogram(mrp_hyp)
 plot_hypnogram(hyp)
 ```
 
+![](mrpheus-integration_files/figure-html/plot-raw-1.png)
+
 Two things jump out. First, REM appears scattered across nearly the
 whole 22-hour recording, including well into what should be plain
 daytime Wake. Second, the trace looks a lot busier than the smooth
@@ -45,7 +45,8 @@ textbook hypnograms you’re used to seeing.
 ## Is this a bug?
 
 Worth checking rather than assuming either way.
-`mrpheus::stage_epochs()`’s entire staging decision is:
+[`mrpheus::stage_epochs()`](https://mrpheus.circadia-lab.uk/reference/stage_epochs.html)’s
+entire staging decision is:
 
 ``` r
 
@@ -76,7 +77,11 @@ isolated_rem  <- staging$confidence[staging$stage == "REM" & staging$run_length 
 sustained_rem <- staging$confidence[staging$stage == "REM" & staging$run_length >= 5]
 
 summary(isolated_rem)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>  0.2751  0.3972  0.4441  0.4632  0.5059  0.8922
 summary(sustained_rem)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>  0.3295  0.4481  0.5408  0.5720  0.6814  0.8640
 ```
 
 Isolated single-epoch REM calls carry meaningfully lower confidence than
@@ -97,6 +102,7 @@ it’s worth cleaning up before cycle detection sees it.
 
 hyp_smooth <- smooth_hypnogram(hyp, method = c("aasm_isolated", "min_run"), min_run_epochs = 4)
 mean(hyp_smooth$stage != hyp_smooth$stage_raw)
+#> [1] 0.1283019
 ```
 
 Worth checking what’s actually left rather than assuming smoothing
@@ -106,6 +112,9 @@ solved everything:
 
 rl_smooth <- rle(as.character(hyp_smooth$stage))
 table(rl_smooth$lengths[rl_smooth$values == "REM"])
+#> 
+#>  1  2  3  4  6  7  9 10 12 13 14 17 
+#>  1  2  1  3  1  6  1  1  1  1  2  2
 ```
 
 Most of the remaining REM runs are 3.5-8.5 minutes long – individually
@@ -120,6 +129,7 @@ interruptions that shouldn’t count as separate cycles:
 ``` r
 
 nrow(compute_cycles(hyp_smooth, method = "aasm"))
+#> [1] 10
 ```
 
 Still high. The remaining explanation: some of those REM excursions are
@@ -144,9 +154,11 @@ sleep_idx    <- which(as.character(hyp_smooth$stage) != "W")
 onset_epoch  <- hyp_smooth$epoch[sleep_idx[1]]
 offset_epoch <- hyp_smooth$epoch[sleep_idx[length(sleep_idx)]]
 (offset_epoch - onset_epoch + 1) * 30 / 3600  # duration in hours -- sanity check
+#> [1] 15.48333
 
 hyp_sleep <- window_hypnogram(hyp_smooth, from_epoch = onset_epoch, to_epoch = offset_epoch)
 nrow(compute_cycles(hyp_sleep, method = "aasm"))
+#> [1] 10
 ```
 
 A duration in the expected 7-8 hour range, and a cycle count that now
@@ -166,7 +178,9 @@ cyc_ff   <- compute_cycles(hyp_sleep, method = "feinberg_floyd")
 cyc_aasm <- compute_cycles(hyp_sleep, method = "aasm")
 
 nrow(cyc_ff)
+#> [1] 15
 nrow(cyc_aasm)
+#> [1] 10
 ```
 
 `feinberg_floyd` (no interruption tolerance) tends to fragment more
@@ -182,10 +196,14 @@ debatable scoring choice rather than a settled fact.
 plot_hypnogram(hyp_sleep, cycles = cyc_aasm)
 ```
 
+![](mrpheus-integration_files/figure-html/plot-final-step-1.png)
+
 ``` r
 
 plot_hypnogram(hyp_sleep, style = "capsule")
 ```
+
+![](mrpheus-integration_files/figure-html/plot-final-capsule-1.png)
 
 ## Takeaways
 
