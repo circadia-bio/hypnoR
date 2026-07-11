@@ -87,6 +87,13 @@
 
 ### 🚀 CI
 
+* Fixed mrpheus/zeitR dependency resolution in CI: added
+  `Additional_repositories: https://circadia-bio.r-universe.dev` and a
+  repo-root `.Rprofile` setting `options(repos = ...)` directly.
+  `Additional_repositories` alone doesn't automatically wire into `pak`'s
+  dependency resolution during CI -- it's mainly a documentation/NOTE-
+  suppression field -- so the `.Rprofile` is what actually makes both
+  packages resolvable.
 * Added a `covr`-based coverage step to the `pkgdown.yaml` workflow,
   writing a coverage badge (`docs/badges/coverage.json`) to `gh-pages` on
   pushes to `main`/`master`/release (matching zeitR's setup). `covr` added
@@ -95,35 +102,30 @@
 
 ### 📚 Documentation
 
-* Extended `vignette("getting-started")` with a "Coarse hypnograms from
-  zeitR" section, running zeitR's full rest-activity pipeline on its
-  bundled ActTrust validation recording (`input1.txt`) end-to-end through
-  the same functions used for the AASM/mrpheus walkthrough -- demonstrating
-  the staging-agnostic contract concretely: `compute_sleep_architecture()`
-  returns `NA` for AASM-only fields and populates the coarse-only ones
-  instead, `compute_transitions()` works over a 3x3 matrix, and
-  `compute_cycles()` errors clearly (no REM stage to segment cycles on).
-  Guarded with `requireNamespace("zeitR")`; `zeitR` added to `Suggests`.
-  New `dev/test_zeitR_pipeline.R`, mirroring the mrpheus one.
-* Added a second worked-example article, `vignette("zeitR-integration")`:
-  the coarse-staging counterpart to `mrpheus-integration`, using the same
-  bundled ActTrust recording -- timestamp-gap inspection, why off-wrist
-  time is folded into `"W"`, picking the right night out of a multi-day
-  recording, and checking (rather than assuming) whether smoothing matters
-  as much for actigraphy-derived staging as it did for mrpheus's raw
-  automatic staging.
-
 * Rewrote `vignette("getting-started")` to reflect the actual current API
   (the previous version referenced `read_hypnogram()`, which doesn't exist
-  yet) and to run against a real recording -- mrpheus's bundled `SC4001E0`
-  example -- rather than hypothetical placeholder code.
-* Added a second article, `vignette("mrpheus-integration")` ("Worked
-  examples" on the pkgdown site): a warts-and-all walkthrough of diagnosing
-  scattered raw REM calls, smoothing, windowing to the real sleep period,
-  and comparing `compute_cycles()`'s two methods, using the same recording.
-  Both vignettes are guarded with `requireNamespace("mrpheus")` so they
-  still build (showing code, not evaluated output) in environments without
-  mrpheus installed.
+  yet), and to run against real recordings from both staging sources rather
+  than hypothetical placeholder code: mrpheus's bundled `SC4001E0` example
+  for the AASM path, and zeitR's bundled `input1.txt` ActTrust recording
+  (via its full rest-activity pipeline) for the coarse path -- demonstrating
+  the staging-agnostic contract concretely: `compute_sleep_architecture()`
+  returns `NA` for AASM-only fields on coarse hypnograms and populates the
+  coarse-only ones instead, `compute_transitions()` works over a 3x3
+  matrix instead of 5x5, and `compute_cycles()` errors clearly on coarse
+  staging (no REM stage to segment cycles on). Both mrpheus- and
+  zeitR-dependent chunks are guarded with `requireNamespace()`; both
+  packages added to `Suggests`. New `dev/test_mrpheus_pipeline.R` and
+  `dev/test_zeitR_pipeline.R`.
+* Added two worked-example articles ("Worked examples" on the pkgdown
+  site), cross-linked to each other: `vignette("mrpheus-integration")`, a
+  warts-and-all walkthrough of diagnosing scattered raw REM calls,
+  smoothing, windowing to the real sleep period, and comparing
+  `compute_cycles()`'s two methods; and `vignette("zeitR-integration")`,
+  the coarse-staging counterpart -- timestamp-gap inspection, why
+  off-wrist time is folded into `"W"`, picking the right night out of a
+  multi-day recording, and checking (rather than assuming) whether
+  smoothing matters as much for actigraphy-derived staging as it did for
+  mrpheus's raw automatic staging.
 
 ## hypnoR 0.1.0  (2026-06)
 
