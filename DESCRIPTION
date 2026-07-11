@@ -37,11 +37,13 @@ Suggests:
     ggplot2 (>= 3.4.0),
     knitr,
     lubridate (>= 1.9.0),
+    mrpheus,
     pkgdown,
     rlang (>= 1.1.0),
     rmarkdown,
     testthat (>= 3.0.0),
     tidyr (>= 1.3.0)
+Additional_repositories: https://circadia-bio.r-universe.dev
 Config/testthat/edition: 3
 URL: https://hypnor.circadia-lab.uk, https://github.com/circadia-bio/hypnoR
 BugReports: https://github.com/circadia-bio/hypnoR/issues
