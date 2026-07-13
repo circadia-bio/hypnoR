@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "hypnoR: Hypnogram Handling, Plotting, and Sleep Architecture Metrics"
+version: 0.1.1
+doi: 10.5281/zenodo.21309263
+url: "https://github.com/circadia-bio/hypnoR"
+repository-code: "https://github.com/circadia-bio/hypnoR"
+license: "MIT"
+authors:
+  - family-names: França
+    given-names: Lucas
+    orcid: "https://orcid.org/0000-0003-0853-1319"
+    affiliation: "Northumbria University, Circadia Lab"
+  - family-names: Leocadio-Miguel
+    given-names: Mario
+    orcid: "https://orcid.org/0000-0002-7248-3529"
+    affiliation: "Northumbria University, Circadia Lab"

@@ -3,6 +3,7 @@
 **Hypnogram handling, plotting, and sleep architecture metrics for R — the staging-agnostic layer of the Circadia Lab ecosystem.**
 
 [![r-universe](https://circadia-bio.r-universe.dev/badges/hypnoR)](https://circadia-bio.r-universe.dev/hypnoR)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21309263-blue)](https://doi.org/10.5281/zenodo.21309263)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![R CMD CHECK](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/hypnoR/actions/workflows/R-CMD-check.yaml)
@@ -174,6 +175,21 @@ plot_transition_matrix(trans$matrix)
 | Author | [Mario Leocadio-Miguel](https://orcid.org/0000-0002-7248-3529) |
 
 Circadia Lab, Northumbria University.
+
+## 📄 Citation
+
+If you use hypnoR in your research, please cite it:
+
+```bibtex
+@software{franca_hypnor_2026,
+  author  = {França, Lucas and Leocadio-Miguel, Mario},
+  title   = {{hypnoR}: Hypnogram Handling, Plotting, and Sleep Architecture Metrics},
+  year    = {2026},
+  version = {0.1.1},
+  doi     = {10.5281/zenodo.21309263},
+  url     = {https://github.com/circadia-bio/hypnoR}
+}
+```
 
 ## 🤝 Related Tools
 
