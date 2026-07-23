@@ -193,9 +193,9 @@ If you use hypnoR in your research, please cite it:
 
 ## 🤝 Related Tools
 
-- 📦 [**zeitR**](https://github.com/circadia-bio/zeitR) — wrist actigraphy analysis and circadian metrics; upstream source of coarse hypnograms
-- 📦 [**mrpheus**](https://github.com/circadia-bio/mrpheus) — PSG signal analysis; upstream source of full AASM hypnograms
-- 📦 [**syncR**](https://github.com/circadia-bio/syncR) — integrates zeitR, slumbR, tallieR, and hypnoR into a unified participant-indexed database
+- ⌚️ [**zeitR**](https://github.com/circadia-bio/zeitR) — wrist actigraphy analysis and circadian metrics; upstream source of coarse hypnograms
+- 🪉 [**mrpheus**](https://github.com/circadia-bio/mrpheus) — PSG signal analysis; upstream source of full AASM hypnograms
+- 🔄 [**syncR**](https://github.com/circadia-bio/syncR) — integrates zeitR, slumbR, tallieR, and hypnoR into a unified participant-indexed database
 - 🔬 [**circadia-bio**](https://github.com/circadia-bio) — the Circadia Lab GitHub organisation
 
 ## 📄 Licence
