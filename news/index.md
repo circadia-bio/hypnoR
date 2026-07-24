@@ -1,5 +1,16 @@
 # Changelog
 
+## hypnoR (development version)
+
+### 🐛 Bug fixes
+
+- Corrected hex sticker logo proportions to match the ecosystem-standard
+  aspect ratio.
+- Fixed the package-name wordmark occasionally rendering misaligned or
+  clipped depending on the viewer/renderer; it’s now baked as vector
+  artwork rather than live text, so it displays identically everywhere.
+- Regenerated favicons from the corrected logo.
+
 ## hypnoR 0.1.1 (2026-07)
 
 ### ✨ New features
