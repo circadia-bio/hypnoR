@@ -2,7 +2,34 @@
     <clipPath id="hexclip">
       <polygon points="340,30 610,190 610,510 340,670 70,510 70,190"></polygon>
     </clipPath>
-  </defs><polygon points="340,30 610,190 610,510 340,670 70,510 70,190" fill="#FFF7C5" clip-path="url(#hexclip)"></polygon><rect x="70" y="190" width="540" height="52" fill="#F4AE52" opacity="0.15" clip-path="url(#hexclip)"></rect><rect x="70" y="242" width="540" height="52" fill="#C1EBE9" opacity="0.25" clip-path="url(#hexclip)"></rect><rect x="70" y="294" width="540" height="52" fill="#C1EBE9" opacity="0.15" clip-path="url(#hexclip)"></rect><rect x="70" y="346" width="540" height="52" fill="#1B3A5C" opacity="0.12" clip-path="url(#hexclip)"></rect><rect x="70" y="398" width="540" height="52" fill="#1B3A5C" opacity="0.22" clip-path="url(#hexclip)"></rect><line x1="126" y1="216" x2="138" y2="216" stroke="#4F252E" stroke-width="1" opacity="0.4"></line><line x1="126" y1="268" x2="138" y2="268" stroke="#4F252E" stroke-width="1" opacity="0.4"></line><line x1="126" y1="320" x2="138" y2="320" stroke="#4F252E" stroke-width="1" opacity="0.4"></line><line x1="126" y1="372" x2="138" y2="372" stroke="#4F252E" stroke-width="1" opacity="0.4"></line><line x1="126" y1="424" x2="138" y2="424" stroke="#4F252E" stroke-width="1" opacity="0.4"></line><text x="122" y="220" text-anchor="end" font-family="monospace" font-size="11" fill="#F4AE52" opacity="0.9">W</text><text x="122" y="272" text-anchor="end" font-family="monospace" font-size="11" fill="#C1EBE9" opacity="0.9">R</text><text x="122" y="324" text-anchor="end" font-family="monospace" font-size="11" fill="#4F252E" opacity="0.6">N1</text><text x="122" y="376" text-anchor="end" font-family="monospace" font-size="11" fill="#1B3A5C" opacity="0.7">N2</text><text x="122" y="428" text-anchor="end" font-family="monospace" font-size="11" fill="#1B3A5C" opacity="0.7">N3</text><polyline points="
+  </defs><g transform="translate(340,0) scale(1.0264,1) translate(-340,0)">
+
+  <!-- Background -->
+  <polygon points="340,30 610,190 610,510 340,670 70,510 70,190" fill="#FFF7C5" clip-path="url(#hexclip)"></polygon>
+
+  <!-- Stage bands -->
+  <rect x="70" y="190" width="540" height="52" fill="#F4AE52" opacity="0.15" clip-path="url(#hexclip)"></rect>
+  <rect x="70" y="242" width="540" height="52" fill="#C1EBE9" opacity="0.25" clip-path="url(#hexclip)"></rect>
+  <rect x="70" y="294" width="540" height="52" fill="#C1EBE9" opacity="0.15" clip-path="url(#hexclip)"></rect>
+  <rect x="70" y="346" width="540" height="52" fill="#1B3A5C" opacity="0.12" clip-path="url(#hexclip)"></rect>
+  <rect x="70" y="398" width="540" height="52" fill="#1B3A5C" opacity="0.22" clip-path="url(#hexclip)"></rect>
+
+  <!-- Axis ticks -->
+  <line x1="126" y1="216" x2="138" y2="216" stroke="#4F252E" stroke-width="1" opacity="0.4"></line>
+  <line x1="126" y1="268" x2="138" y2="268" stroke="#4F252E" stroke-width="1" opacity="0.4"></line>
+  <line x1="126" y1="320" x2="138" y2="320" stroke="#4F252E" stroke-width="1" opacity="0.4"></line>
+  <line x1="126" y1="372" x2="138" y2="372" stroke="#4F252E" stroke-width="1" opacity="0.4"></line>
+  <line x1="126" y1="424" x2="138" y2="424" stroke="#4F252E" stroke-width="1" opacity="0.4"></line>
+
+  <!-- Stage labels -->
+  <text x="122" y="220" text-anchor="end" font-family="monospace" font-size="11" fill="#F4AE52" opacity="0.9">W</text>
+  <text x="122" y="272" text-anchor="end" font-family="monospace" font-size="11" fill="#C1EBE9" opacity="0.9">R</text>
+  <text x="122" y="324" text-anchor="end" font-family="monospace" font-size="11" fill="#4F252E" opacity="0.6">N1</text>
+  <text x="122" y="376" text-anchor="end" font-family="monospace" font-size="11" fill="#1B3A5C" opacity="0.7">N2</text>
+  <text x="122" y="428" text-anchor="end" font-family="monospace" font-size="11" fill="#1B3A5C" opacity="0.7">N3</text>
+
+  <!-- Hypnogram trace -->
+  <polyline points="
       140,216 175,216
       175,320 215,320
       215,372 255,372
@@ -17,4 +44,30 @@
       470,320 510,320
       510,268 540,268
       540,216 560,216
-    " fill="none" stroke="#4F252E" stroke-width="2.4" stroke-linejoin="miter" clip-path="url(#hexclip)" opacity="0.9"></polyline><circle cx="540" cy="216" r="4.5" fill="#F4AE52" opacity="0.95"></circle><polygon points="340,30 610,190 610,510 340,670 70,510 70,190" fill="none" stroke="#F4AE52" stroke-width="14"></polygon><text x="340" y="572" text-anchor="middle" font-family="'DM Sans', 'Helvetica Neue', sans-serif" font-size="62" font-weight="700" fill="#4F252E" letter-spacing="-1">hypno<tspan fill="#F4AE52">R</tspan></text></svg>
+    " fill="none" stroke="#4F252E" stroke-width="2.4" stroke-linejoin="miter" clip-path="url(#hexclip)" opacity="0.9"></polyline>
+
+  <!-- Trailing dot -->
+  <circle cx="540" cy="216" r="4.5" fill="#F4AE52" opacity="0.95"></circle>
+
+  <!-- Hex border -->
+  <polygon points="340,30 610,190 610,510 340,670 70,510 70,190" fill="none" stroke="#F4AE52" stroke-width="14"></polygon>
+
+  <!-- Package name -->
+  <!-- Converted to vector paths (Liberation Sans Bold outlines, extracted via
+       fontTools) instead of a live <text> element. Two independent problems
+       with the text version: (1) DM Sans isn't guaranteed available in every
+       render environment (CI, r-universe, a viewer without the font), so a
+       substituted fallback can be a different width; (2) cairosvg specifically
+       has a text-anchor="middle" bug with multi-tspan text that miscentres the
+       string entirely, independent of font width. Vector paths remove both
+       failure modes: this is now plain geometry, identical in every renderer. -->
+  <g>
+    <path transform="translate(227.128,572) scale(0.030273,-0.030273)" d="M420 866Q477 990 563.0 1046.0Q649 1102 768 1102Q940 1102 1032.0 996.0Q1124 890 1124 686V0H844V606Q844 891 651 891Q549 891 486.5 803.5Q424 716 424 579V0H143V1484H424V1079Q424 970 416 866Z" fill="#4F252E"></path>
+    <path transform="translate(264.000,572) scale(0.030273,-0.030273)" d="M283 -425Q182 -425 106 -412V-212Q159 -220 203 -220Q263 -220 302.5 -201.0Q342 -182 373.5 -138.0Q405 -94 444 11L16 1082H313L483 575Q523 466 584 241L609 336L674 571L834 1082H1128L700 -57Q614 -265 521.5 -345.0Q429 -425 283 -425Z" fill="#4F252E"></path>
+    <path transform="translate(297.481,572) scale(0.030273,-0.030273)" d="M1167 546Q1167 275 1058.5 127.5Q950 -20 752 -20Q638 -20 553.5 29.5Q469 79 424 172H418Q424 142 424 -10V-425H143V833Q143 986 135 1082H408Q413 1064 416.5 1011.0Q420 958 420 906H424Q519 1105 770 1105Q959 1105 1063.0 959.5Q1167 814 1167 546ZM874 546Q874 910 651 910Q539 910 479.5 812.0Q420 714 420 538Q420 363 479.5 267.5Q539 172 649 172Q874 172 874 546Z" fill="#4F252E"></path>
+    <path transform="translate(334.354,572) scale(0.030273,-0.030273)" d="M844 0V607Q844 892 651 892Q549 892 486.5 804.5Q424 717 424 580V0H143V840Q143 927 140.5 982.5Q138 1038 135 1082H403Q406 1063 411.0 980.5Q416 898 416 867H420Q477 991 563.0 1047.0Q649 1103 768 1103Q940 1103 1032.0 997.0Q1124 891 1124 687V0Z" fill="#4F252E"></path>
+    <path transform="translate(371.226,572) scale(0.030273,-0.030273)" d="M1171 542Q1171 279 1025.0 129.5Q879 -20 621 -20Q368 -20 224.0 130.0Q80 280 80 542Q80 803 224.0 952.5Q368 1102 627 1102Q892 1102 1031.5 957.5Q1171 813 1171 542ZM877 542Q877 735 814.0 822.0Q751 909 631 909Q375 909 375 542Q375 361 437.5 266.5Q500 172 618 172Q877 172 877 542Z" fill="#4F252E"></path>
+    <path transform="translate(408.098,572) scale(0.030273,-0.030273)" d="M1105 0 778 535H432V0H137V1409H841Q1093 1409 1230.0 1300.5Q1367 1192 1367 989Q1367 841 1283.0 733.5Q1199 626 1056 592L1437 0ZM1070 977Q1070 1180 810 1180H432V764H818Q942 764 1006.0 820.0Q1070 876 1070 977Z" fill="#F4AE52"></path>
+  </g>
+
+  </g></svg>
