@@ -1,0 +1,33 @@
+{
+  "title": "hypnoR: Hypnogram Handling, Plotting, and Sleep Architecture Metrics",
+  "description": "Provides a staging-agnostic layer for hypnogram ingestion, sleep architecture metric computation, cycle segmentation, and transition analysis. Accepts full AASM-staged hypnograms (W / N1 / N2 / N3 / REM) from mrpheus and coarser actigraphy-derived hypnograms (W / Sleep / Quiet sleep) from zeitR; all metric functions degrade gracefully depending on staging resolution. Includes publication-ready plotting with a shared Circadia Lab colour palette. Designed as the hypnogram layer of the Circadia Lab ecosystem, feeding into syncR.",
+  "creators": [
+    {
+      "name": "França, Lucas",
+      "affiliation": "Northumbria University",
+      "orcid": "0000-0003-0853-1319"
+    },
+    {
+      "name": "Leocadio-Miguel, Mario",
+      "affiliation": "Northumbria University",
+      "orcid": "0000-0002-7248-3529"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "hypnogram",
+    "sleep architecture",
+    "sleep staging",
+    "R package",
+    "Circadia Lab"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/circadia-bio/hypnoR",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
+}
