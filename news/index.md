@@ -1,6 +1,6 @@
 # Changelog
 
-## hypnoR (development version)
+## hypnoR 0.1.2 (2026-11)
 
 ### ✨ New features
 

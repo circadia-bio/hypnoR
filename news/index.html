@@ -92,7 +92,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hypnoR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,20 +126,20 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/circadia-bio/hypnoR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/circadia-bio/hypnoR/blob/v0.1.2/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="hypnor-development-version">hypnoR (development version)<a class="anchor" aria-label="anchor" href="#hypnor-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.1.2" id="hypnor-012-2026-11">hypnoR 0.1.2 (2026-11)<a class="anchor" aria-label="anchor" href="#hypnor-012-2026-11"></a></h2>
 <div class="section level3">
-<h3 id="sparkles-new-features-development-version">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-development-version"></a></h3>
+<h3 id="sparkles-new-features-0-1-2">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-0-1-2"></a></h3>
 <ul><li>
 <code><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code> now handles <strong>unscored epochs</strong> (stage <code>NA</code>, for example stretches where the recording had no usable signal). They count towards time in bed and towards the time before sleep onset, but towards no stage, total sleep time, wake after sleep onset or latency. Previously a single <code>NA</code> stage made <code>tst_min</code> and most other metrics <code>NA</code>. The new <code>unscored_min</code> column (appended after <code>staging_resolution</code>) gives their total; it is <code>0</code> for a fully staged hypnogram.</li>
 <li>
 <code><a href="../reference/compute_sleep_architecture.html">compute_sleep_architecture()</a></code> gains <code>waso_until</code>. The default, <code>"last_sleep"</code>, is the existing definition (wake between the first and last sleep epoch), so results for existing code are unchanged. <code>"end"</code> counts wake from sleep onset to the end of the hypnogram or <code>lights_off</code>/<code>lights_on</code> window, including a final awakening.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-bug-fixes-development-version">🐛 Bug fixes<a class="anchor" aria-label="anchor" href="#bug-bug-fixes-development-version"></a></h3>
+<h3 id="bug-bug-fixes-0-1-2">🐛 Bug fixes<a class="anchor" aria-label="anchor" href="#bug-bug-fixes-0-1-2"></a></h3>
 <ul><li>Corrected hex sticker logo proportions to match the ecosystem-standard aspect ratio.</li>
 <li>Fixed the package-name wordmark occasionally rendering misaligned or clipped depending on the viewer/renderer; it’s now baked as vector artwork rather than live text, so it displays identically everywhere.</li>
 <li>Regenerated favicons from the corrected logo.</li>
