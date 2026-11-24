@@ -4,7 +4,12 @@
 \alias{compute_sleep_architecture}
 \title{Compute sleep architecture metrics}
 \usage{
-compute_sleep_architecture(hypnogram, lights_off = NULL, lights_on = NULL)
+compute_sleep_architecture(
+  hypnogram,
+  lights_off = NULL,
+  lights_on = NULL,
+  waso_until = c("last_sleep", "end")
+)
 }
 \arguments{
 \item{hypnogram}{A \code{hypnor_hypnogram} object as returned by
@@ -20,6 +25,12 @@ to this window via \code{\link[=window_hypnogram]{window_hypnogram()}} -- every 
 \code{WASO}, stage percentages, everything) is computed relative to the
 window, not just \code{TIB}/\code{SE}. Otherwise \code{TIB} defaults to the full span
 of \code{hypnogram} as passed in (first to last epoch).}
+
+\item{waso_until}{Where wake after sleep onset stops counting: \code{"last_sleep"}
+(the default) counts wake epochs between the first and last sleep epoch,
+so a final awakening before lights-on is not WASO; \code{"end"} counts wake
+epochs from the first sleep epoch to the end of the hypnogram (or of the
+\code{lights_off}/\code{lights_on} window), the definition that includes it.}
 }
 \value{
 A one-row tibble with columns:
@@ -29,9 +40,10 @@ A one-row tibble with columns:
 \item{se_pct}{Sleep efficiency (percent) = TST / TIB * 100.}
 \item{sol_min}{Sleep onset latency (minutes). \code{NA} if no sleep
 epoch is present.}
-\item{waso_min}{Wake after sleep onset (minutes): wake epochs
-between the first and last sleep epoch. \code{NA} if no sleep epoch
-is present.}
+\item{waso_min}{Wake after sleep onset (minutes): wake epochs after
+the first sleep epoch, up to the last sleep epoch
+(\code{waso_until = "last_sleep"}, the default) or to the end of the
+hypnogram or window (\code{"end"}). \code{NA} if no sleep epoch is present.}
 \item{rem_lat_min}{REM latency from sleep onset (minutes). \code{NA} for
 coarse hypnograms or if no REM epoch is present.}
 \item{sws_lat_min}{SWS (N3) latency from sleep onset (minutes). \code{NA}
@@ -41,6 +53,8 @@ for coarse hypnograms.}
 \item{pct_sleep,pct_quiet_sleep}{Stage percentages of TST for coarse
 hypnograms. \code{NA} for full AASM hypnograms.}
 \item{staging_resolution}{\code{"aasm"} or \code{"coarse"}.}
+\item{unscored_min}{Minutes of unscored (\code{NA}) epochs; \code{0} when
+every epoch is staged.}
 }
 }
 \description{
@@ -56,6 +70,12 @@ Sleep onset is defined as the first epoch with any non-\code{"W"} stage --
 this applies uniformly to full AASM hypnograms (where \code{N1} counts as
 sleep onset) and coarse hypnograms (where \code{"Sleep"} or \code{"Quiet sleep"}
 both count).
+
+Epochs whose stage is \code{NA} are \emph{unscored} (for example, stretches where
+the recording had no usable signal). They count towards time in bed and
+towards the time before sleep onset, but not towards total sleep time,
+wake after sleep onset, any stage percentage or any latency. Their total
+is returned as \code{unscored_min}.
 }
 \examples{
 \dontrun{

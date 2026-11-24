@@ -150,3 +150,115 @@ test_that("compute_sleep_architecture() accepts a bare data frame and normalises
   expect_equal(arch$staging_resolution, "aasm")
   expect_equal(arch$tst_min, 4 * 0.5)  # default 30 s epochs assumed
 })
+
+# ── Unscored (NA) epochs ───────────────────────────────────────────────────────────────────────
+# 11 epochs @ 30 s: W, NA, N1, N2, NA, NA, N2, W, REM, W, NA.
+# Sleep (N1, N2, N2, REM) is epochs 3, 4, 7, 9; onset at epoch 3; four NA epochs.
+
+make_na_hyp <- function() {
+  stage <- c("W", NA, "N1", "N2", NA, NA, "N2", "W", "REM", "W", NA)
+  new_hypnogram(tibble::tibble(epoch = seq_along(stage), stage = stage))
+}
+
+test_that("compute_sleep_architecture() counts NA epochs as time in bed but as no stage", {
+  arch <- compute_sleep_architecture(make_na_hyp())
+
+  expect_equal(arch$tib_min, 5.5)             # all 11 epochs
+  expect_equal(arch$tst_min, 2)               # 4 sleep epochs
+  expect_equal(arch$se_pct, 2 / 5.5 * 100)
+  expect_equal(arch$sol_min, 1)               # (3 - 1) * 0.5: the NA at epoch 2 is time before onset
+  expect_equal(arch$rem_lat_min, 3)           # (9 - 3) * 0.5
+  expect_true(is.na(arch$sws_lat_min))
+  expect_equal(arch$pct_n1, 25)               # of 4 sleep epochs, not of 11
+  expect_equal(arch$pct_n2, 50)
+  expect_equal(arch$pct_n3, 0)
+  expect_equal(arch$pct_rem, 25)
+  expect_equal(arch$unscored_min, 2)          # epochs 2, 5, 6, 11
+})
+
+test_that("unscored_min is 0 when every epoch is staged", {
+  expect_equal(compute_sleep_architecture(make_aasm_hyp())$unscored_min, 0)
+})
+
+test_that("a hypnogram with no staged epochs at all gives no sleep and all-unscored time", {
+  hyp  <- new_hypnogram(tibble::tibble(epoch = 1:4, stage = NA_character_))
+  arch <- compute_sleep_architecture(hyp)
+
+  expect_equal(arch$tib_min, 2)
+  expect_equal(arch$tst_min, 0)
+  expect_equal(arch$unscored_min, 2)
+  expect_true(is.na(arch$sol_min))
+  expect_true(is.na(arch$waso_min))
+})
+
+# ── waso_until ──────────────────────────────────────────────────────────────────────────
+
+test_that("waso_until defaults to the last sleep epoch, leaving results unchanged", {
+  hyp <- make_aasm_hyp()
+  expect_equal(compute_sleep_architecture(hyp)$waso_min, 0.5)
+  expect_equal(compute_sleep_architecture(hyp, waso_until = "last_sleep")$waso_min, 0.5)
+})
+
+test_that("waso_until = 'end' also counts the final wake block", {
+  # epoch 11 (one W) plus the final block, epochs 18-20 (three W): 4 epochs * 0.5 min
+  arch <- compute_sleep_architecture(make_aasm_hyp(), waso_until = "end")
+  expect_equal(arch$waso_min, 2)
+  expect_equal(arch$tst_min, 7)                # nothing else changes
+  expect_equal(arch$sol_min, 1)
+})
+
+test_that("waso_until = 'end' ignores unscored epochs", {
+  # onset epoch 3; W at epochs 8 and 10 are WASO; the NA epochs are not
+  expect_equal(compute_sleep_architecture(make_na_hyp(), waso_until = "end")$waso_min, 1)
+  # to the last sleep epoch (9) only the W at epoch 8 counts
+  expect_equal(compute_sleep_architecture(make_na_hyp())$waso_min, 0.5)
+})
+
+test_that("waso_until rejects an unknown value", {
+  expect_error(compute_sleep_architecture(make_aasm_hyp(), waso_until = "never"))
+})
+
+# ── Parity with an independent implementation ────────────────────────────────────────────────────────────
+# A plain re-statement of the definitions (unscored epochs count as time in bed only,
+# WASO to the end), checked on random hypnograms with and without NA epochs.
+
+test_that("compute_sleep_architecture() matches an independent implementation on random hypnograms", {
+  reference <- function(stage, epoch_s = 30) {
+    n      <- length(stage)
+    asleep <- !is.na(stage) & stage != "W"
+    mins   <- function(x) sum(x) * epoch_s / 60
+    onset  <- which(asleep)[1L]
+    tst    <- mins(asleep)
+    list(
+      tib      = n * epoch_s / 60,
+      tst      = tst,
+      sol      = if (is.na(onset)) NA_real_ else (onset - 1L) * epoch_s / 60,
+      waso_end = if (is.na(onset)) NA_real_ else
+                   mins(stage[onset:n] == "W" & !is.na(stage[onset:n])),
+      rem_lat  = { i <- which(stage == "REM")[1L]; if (is.na(onset) || is.na(i)) NA_real_ else (i - onset) * epoch_s / 60 },
+      pct_n2   = if (tst > 0) 100 * mins(!is.na(stage) & stage == "N2") / tst else NA_real_,
+      unscored = mins(is.na(stage))
+    )
+  }
+
+  set.seed(20260724)
+  lv <- c("W", "N1", "N2", "N3", "REM")
+  for (i in 1:100) {
+    n     <- sample(20:300, 1)
+    stage <- sample(lv, n, replace = TRUE, prob = c(0.45, 0.05, 0.3, 0.1, 0.1))
+    if (i %% 2 == 0) stage[sample(n, sample(0:(n %/% 2), 1))] <- NA
+    # keep the resolution AASM even when a draw has no REM or N3
+    hyp <- new_hypnogram(tibble::tibble(epoch = seq_len(n), stage = stage), resolution = "aasm")
+
+    arch <- compute_sleep_architecture(hyp, waso_until = "end")
+    ref  <- reference(stage)
+
+    expect_equal(arch$tib_min, ref$tib)
+    expect_equal(arch$tst_min, ref$tst)
+    expect_equal(arch$sol_min, ref$sol)
+    expect_equal(arch$waso_min, ref$waso_end)
+    expect_equal(arch$rem_lat_min, ref$rem_lat)
+    expect_equal(arch$pct_n2, ref$pct_n2)
+    expect_equal(arch$unscored_min, ref$unscored)
+  }
+})

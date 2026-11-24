@@ -12,6 +12,12 @@
 #' sleep onset) and coarse hypnograms (where `"Sleep"` or `"Quiet sleep"`
 #' both count).
 #'
+#' Epochs whose stage is `NA` are *unscored* (for example, stretches where
+#' the recording had no usable signal). They count towards time in bed and
+#' towards the time before sleep onset, but not towards total sleep time,
+#' wake after sleep onset, any stage percentage or any latency. Their total
+#' is returned as `unscored_min`.
+#'
 #' @param hypnogram A `hypnor_hypnogram` object as returned by
 #'   [new_hypnogram()] or [read_hypnogram()], or any data frame with at
 #'   minimum `epoch` and `stage` columns -- it will be passed through
@@ -24,6 +30,11 @@
 #'   `WASO`, stage percentages, everything) is computed relative to the
 #'   window, not just `TIB`/`SE`. Otherwise `TIB` defaults to the full span
 #'   of `hypnogram` as passed in (first to last epoch).
+#' @param waso_until Where wake after sleep onset stops counting: `"last_sleep"`
+#'   (the default) counts wake epochs between the first and last sleep epoch,
+#'   so a final awakening before lights-on is not WASO; `"end"` counts wake
+#'   epochs from the first sleep epoch to the end of the hypnogram (or of the
+#'   `lights_off`/`lights_on` window), the definition that includes it.
 #'
 #' @return A one-row tibble with columns:
 #'   \describe{
@@ -32,9 +43,10 @@
 #'     \item{se_pct}{Sleep efficiency (percent) = TST / TIB * 100.}
 #'     \item{sol_min}{Sleep onset latency (minutes). `NA` if no sleep
 #'       epoch is present.}
-#'     \item{waso_min}{Wake after sleep onset (minutes): wake epochs
-#'       between the first and last sleep epoch. `NA` if no sleep epoch
-#'       is present.}
+#'     \item{waso_min}{Wake after sleep onset (minutes): wake epochs after
+#'       the first sleep epoch, up to the last sleep epoch
+#'       (`waso_until = "last_sleep"`, the default) or to the end of the
+#'       hypnogram or window (`"end"`). `NA` if no sleep epoch is present.}
 #'     \item{rem_lat_min}{REM latency from sleep onset (minutes). `NA` for
 #'       coarse hypnograms or if no REM epoch is present.}
 #'     \item{sws_lat_min}{SWS (N3) latency from sleep onset (minutes). `NA`
@@ -44,6 +56,8 @@
 #'     \item{pct_sleep,pct_quiet_sleep}{Stage percentages of TST for coarse
 #'       hypnograms. `NA` for full AASM hypnograms.}
 #'     \item{staging_resolution}{`"aasm"` or `"coarse"`.}
+#'     \item{unscored_min}{Minutes of unscored (`NA`) epochs; `0` when
+#'       every epoch is staged.}
 #'   }
 #'
 #' @export
@@ -54,7 +68,10 @@
 #' }
 compute_sleep_architecture <- function(hypnogram,
                                        lights_off = NULL,
-                                       lights_on  = NULL) {
+                                       lights_on  = NULL,
+                                       waso_until = c("last_sleep", "end")) {
+  waso_until <- match.arg(waso_until)
+
   if (!inherits(hypnogram, "hypnor_hypnogram")) {
     hypnogram <- new_hypnogram(hypnogram)
   }
@@ -78,7 +95,11 @@ compute_sleep_architecture <- function(hypnogram,
   stage <- as.character(hypnogram$stage)
   n     <- length(stage)
 
-  asleep   <- stage != "W"
+  # NA stages are unscored: neither sleep nor wake
+  scored     <- !is.na(stage)
+  n_unscored <- sum(!scored)
+
+  asleep   <- scored & stage != "W"
   n_asleep <- sum(asleep)
 
   tst_min <- .epochs_to_min(n_asleep, epoch_sec)
@@ -94,8 +115,9 @@ compute_sleep_architecture <- function(hypnogram,
   }
 
   waso_min <- if (n_asleep > 0L) {
-    span <- stage[onset_idx:offset_idx]
-    .epochs_to_min(sum(span == "W"), epoch_sec)
+    waso_last <- if (waso_until == "end") n else offset_idx
+    span      <- stage[onset_idx:waso_last]
+    .epochs_to_min(sum(span == "W", na.rm = TRUE), epoch_sec)
   } else {
     NA_real_
   }
@@ -123,7 +145,7 @@ compute_sleep_architecture <- function(hypnogram,
 
   pct_of_tst <- function(label) {
     if (n_asleep == 0L) return(NA_real_)
-    sum(stage == label) / n_asleep * 100
+    sum(stage == label, na.rm = TRUE) / n_asleep * 100
   }
 
   aasm <- res == "aasm"
@@ -142,6 +164,7 @@ compute_sleep_architecture <- function(hypnogram,
     pct_rem            = if (aasm) pct_of_tst("REM") else NA_real_,
     pct_sleep          = if (aasm) NA_real_ else pct_of_tst("Sleep"),
     pct_quiet_sleep    = if (aasm) NA_real_ else pct_of_tst("Quiet sleep"),
-    staging_resolution = res
+    staging_resolution = res,
+    unscored_min       = .epochs_to_min(n_unscored, epoch_sec)
   )
 }
