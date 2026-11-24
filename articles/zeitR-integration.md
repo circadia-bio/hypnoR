@@ -173,12 +173,12 @@ noise they produce, not just a coincidence of this particular recording.
 
 arch_night1 <- compute_sleep_architecture(hyp_night1)
 arch_night1
-#> # A tibble: 1 × 14
+#> # A tibble: 1 × 15
 #>   tst_min tib_min se_pct sol_min waso_min rem_lat_min sws_lat_min pct_n1 pct_n2
 #>     <dbl>   <dbl>  <dbl>   <dbl>    <dbl>       <dbl>       <dbl>  <dbl>  <dbl>
 #> 1     207    216.   95.6       0        9          NA          NA     NA     NA
-#> # ℹ 5 more variables: pct_n3 <dbl>, pct_rem <dbl>, pct_sleep <dbl>,
-#> #   pct_quiet_sleep <dbl>, staging_resolution <chr>
+#> # ℹ 6 more variables: pct_n3 <dbl>, pct_rem <dbl>, pct_sleep <dbl>,
+#> #   pct_quiet_sleep <dbl>, staging_resolution <chr>, unscored_min <dbl>
 ```
 
 ``` r

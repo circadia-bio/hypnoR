@@ -165,12 +165,12 @@ from the data itself.
 
 arch <- compute_sleep_architecture(hyp_sleep)
 arch
-#> # A tibble: 1 × 14
+#> # A tibble: 1 × 15
 #>   tst_min tib_min se_pct sol_min waso_min rem_lat_min sws_lat_min pct_n1 pct_n2
 #>     <dbl>   <dbl>  <dbl>   <dbl>    <dbl>       <dbl>       <dbl>  <dbl>  <dbl>
 #> 1    372.     929   40.0       0     558.           0         361   6.46   41.2
-#> # ℹ 5 more variables: pct_n3 <dbl>, pct_rem <dbl>, pct_sleep <dbl>,
-#> #   pct_quiet_sleep <dbl>, staging_resolution <chr>
+#> # ℹ 6 more variables: pct_n3 <dbl>, pct_rem <dbl>, pct_sleep <dbl>,
+#> #   pct_quiet_sleep <dbl>, staging_resolution <chr>, unscored_min <dbl>
 ```
 
 ## Stage transitions
@@ -294,12 +294,12 @@ present), and every metric function adapts automatically – no separate
 
 arch_coarse <- compute_sleep_architecture(hyp_coarse)
 arch_coarse
-#> # A tibble: 1 × 14
+#> # A tibble: 1 × 15
 #>   tst_min tib_min se_pct sol_min waso_min rem_lat_min sws_lat_min pct_n1 pct_n2
 #>     <dbl>   <dbl>  <dbl>   <dbl>    <dbl>       <dbl>       <dbl>  <dbl>  <dbl>
 #> 1  12078.   38098   31.7     376    25554          NA          NA     NA     NA
-#> # ℹ 5 more variables: pct_n3 <dbl>, pct_rem <dbl>, pct_sleep <dbl>,
-#> #   pct_quiet_sleep <dbl>, staging_resolution <chr>
+#> # ℹ 6 more variables: pct_n3 <dbl>, pct_rem <dbl>, pct_sleep <dbl>,
+#> #   pct_quiet_sleep <dbl>, staging_resolution <chr>, unscored_min <dbl>
 ```
 
 Notice `rem_lat_min`, `sws_lat_min`, and the AASM stage percentages

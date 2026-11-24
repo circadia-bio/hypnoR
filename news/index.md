@@ -2,6 +2,23 @@
 
 ## hypnoR (development version)
 
+### ✨ New features
+
+- [`compute_sleep_architecture()`](https://hypnor.circadia-lab.uk/reference/compute_sleep_architecture.md)
+  now handles **unscored epochs** (stage `NA`, for example stretches
+  where the recording had no usable signal). They count towards time in
+  bed and towards the time before sleep onset, but towards no stage,
+  total sleep time, wake after sleep onset or latency. Previously a
+  single `NA` stage made `tst_min` and most other metrics `NA`. The new
+  `unscored_min` column (appended after `staging_resolution`) gives
+  their total; it is `0` for a fully staged hypnogram.
+- [`compute_sleep_architecture()`](https://hypnor.circadia-lab.uk/reference/compute_sleep_architecture.md)
+  gains `waso_until`. The default, `"last_sleep"`, is the existing
+  definition (wake between the first and last sleep epoch), so results
+  for existing code are unchanged. `"end"` counts wake from sleep onset
+  to the end of the hypnogram or `lights_off`/`lights_on` window,
+  including a final awakening.
+
 ### 🐛 Bug fixes
 
 - Corrected hex sticker logo proportions to match the ecosystem-standard
