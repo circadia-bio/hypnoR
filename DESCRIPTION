@@ -1,6 +1,6 @@
 Package: hypnoR
 Title: Hypnogram Handling, Plotting, and Sleep Architecture Metrics
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
